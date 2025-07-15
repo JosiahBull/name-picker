@@ -13,6 +13,9 @@
     "typecheck": "tsc --noEmit",
     "clean": "rimraf dist node_modules"
   },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.51.0"
+  },
   "devDependencies": {
     "@types/node": "^24.0.13"
   }

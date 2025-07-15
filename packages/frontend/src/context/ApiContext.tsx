@@ -1,5 +1,5 @@
 import { createContext, useContext, ReactNode } from 'react'
-import { ApiClient, MockApiClient } from '@name-picker/shared'
+import { ApiClient, SupabaseApiClient } from '@name-picker/shared'
 
 interface ApiContextType {
 	api: ApiClient
@@ -12,7 +12,15 @@ interface ApiProviderProps {
 }
 
 export function ApiProvider({ children }: ApiProviderProps) {
-	const api = new MockApiClient()
+	const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+	const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+	const serviceRoleKey = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY
+
+	if (!supabaseUrl || !supabaseKey) {
+		throw new Error('Missing Supabase environment variables')
+	}
+
+	const api = new SupabaseApiClient(supabaseUrl, supabaseKey, serviceRoleKey)
 
 	return <ApiContext.Provider value={{ api }}>{children}</ApiContext.Provider>
 }

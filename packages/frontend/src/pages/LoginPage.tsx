@@ -61,23 +61,23 @@ export default function LoginPage() {
 							Who are you?
 						</Typography>
 
-						{Object.values(users).map(user => (
+						{Object.entries(users).map(([userId, user]) => (
 							<Button
 								key={user.id}
 								variant="contained"
 								size="large"
 								startIcon={<Person />}
-								onClick={() => handleLogin(user.id)}
+								onClick={() => handleLogin(userId as UserId)}
 								sx={{
 									py: 2,
 									fontSize: '1.1rem',
 									textTransform: 'none',
 									background: `linear-gradient(45deg, ${
-										user.id === 'joe' ? '#2196f3 30%, #21cbf3 90%' : '#f44336 30%, #ff9800 90%'
+										userId === 'joe' ? '#2196f3 30%, #21cbf3 90%' : '#f44336 30%, #ff9800 90%'
 									})`,
 									'&:hover': {
 										background: `linear-gradient(45deg, ${
-											user.id === 'joe' ? '#1976d2 30%, #0097a7 90%' : '#d32f2f 30%, #f57c00 90%'
+											userId === 'joe' ? '#1976d2 30%, #0097a7 90%' : '#d32f2f 30%, #f57c00 90%'
 										})`,
 									},
 								}}

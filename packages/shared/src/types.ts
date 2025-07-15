@@ -46,3 +46,13 @@ export interface SwipeResult {
 }
 
 export type SwipeDirection = 'left' | 'right'
+
+export interface ApiClient {
+	getNextName(userId: string): Promise<Name | null>
+	swipeName(action: SwipeAction): Promise<SwipeResult>
+	getMatches(userId: string): Promise<Match[]>
+	getUserProfile(userId: string): Promise<User>
+	getAnalytics(userId: string): Promise<Analytics>
+	createUser(email: string, name: string): Promise<User>
+	linkPartner(userId: string, partnerId: string): Promise<void>
+}

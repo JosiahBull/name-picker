@@ -16,9 +16,11 @@ export default function SwipePage() {
 	const [swipeCount, setSwipeCount] = useState(0)
 
 	const loadNextName = async () => {
+		if (!currentUser) return
+		
 		setLoading(true)
 		try {
-			const name = await api.getNextName()
+			const name = await api.getNextName(currentUser.id)
 			setCurrentName(name)
 		} catch (error) {
 			console.error('Failed to load next name:', error)
@@ -28,8 +30,10 @@ export default function SwipePage() {
 	}
 
 	useEffect(() => {
-		loadNextName()
-	}, [])
+		if (currentUser) {
+			loadNextName()
+		}
+	}, [currentUser])
 
 	const handleSwipe = async (direction: SwipeDirection) => {
 		if (!currentName || !currentUser) return

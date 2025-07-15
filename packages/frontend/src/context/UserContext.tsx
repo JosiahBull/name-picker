@@ -3,19 +3,19 @@ import { createContext, useContext, ReactNode, useState, useEffect } from 'react
 export type UserId = 'joe' | 'sam'
 
 interface UserInfo {
-	id: UserId
+	id: string // UUID from database
 	name: string
 	displayName: string
 }
 
 const USERS: Record<UserId, UserInfo> = {
 	joe: {
-		id: 'joe',
+		id: '550e8400-e29b-41d4-a716-446655440001', // UUID from seed data
 		name: 'joe',
 		displayName: 'Joe',
 	},
 	sam: {
-		id: 'sam',
+		id: '550e8400-e29b-41d4-a716-446655440002', // UUID from seed data
 		name: 'sam',
 		displayName: 'Sam',
 	},

@@ -1,14 +1,4 @@
-import { Name, SwipeAction, Match, User, Analytics, SwipeResult } from './types'
-
-export interface ApiClient {
-	getNextName(): Promise<Name | null>
-	swipeName(action: SwipeAction): Promise<SwipeResult>
-	getMatches(userId: string): Promise<Match[]>
-	getUserProfile(userId: string): Promise<User>
-	getAnalytics(userId: string): Promise<Analytics>
-	createUser(email: string, name: string): Promise<User>
-	linkPartner(userId: string, partnerId: string): Promise<void>
-}
+import { Name, SwipeAction, Match, User, Analytics, SwipeResult, ApiClient } from './types'
 
 export class MockApiClient implements ApiClient {
 	private mockNames: Name[] = [
