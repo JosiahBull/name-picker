@@ -41,11 +41,6 @@ else
     echo "⚠️  No unit tests found - this is expected for now"
 fi
 
-# Ensure the database is up to date
-echo "🗄️ Ensuring database is up to date..."
-pnpm run supabase:start
-pnpm run supabase:reset
-
 # Run E2E tests with Playwright
 echo "🎭 Running E2E tests..."
 if [ "${CI:-false}" = "true" ]; then
