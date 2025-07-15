@@ -19,7 +19,9 @@
     "@mui/material": "^7.2.0",
     "@name-picker/shared": "workspace:*",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.6.3",
+    "framer-motion": "^11.17.4"
   },
   "devDependencies": {
     "@types/react": "^19.1.8",
