@@ -72,7 +72,7 @@ export class MockApiClient implements ApiClient {
 	private swipes: SwipeAction[] = []
 	private matches: Match[] = []
 
-	async getNextName(): Promise<Name | null> {
+	async getNextName(_userId: string): Promise<Name | null> {
 		if (this.currentIndex >= this.mockNames.length) {
 			return null
 		}
@@ -144,5 +144,29 @@ export class MockApiClient implements ApiClient {
 	async linkPartner(_userId: string, _partnerId: string): Promise<void> {
 		// Mock implementation
 		console.log(`Linking user ${_userId} with partner ${_partnerId}`)
+	}
+
+	async addName(_userId: string, name: string, origin?: string, meaning?: string, gender: 'masculine' | 'feminine' | 'neutral' = 'neutral'): Promise<string> {
+		const newName: Name = {
+			id: `user-${Date.now()}`,
+			name,
+			origin,
+			meaning,
+			gender,
+			popularity: 100,
+		}
+		this.mockNames.push(newName)
+		return newName.id
+	}
+
+	async addNamesFromFile(_userId: string, names: string[]): Promise<string[]> {
+		const results: string[] = []
+		for (const name of names) {
+			if (name.trim()) {
+				const id = await this.addName(_userId, name.trim())
+				results.push(id)
+			}
+		}
+		return results
 	}
 }

@@ -249,4 +249,49 @@ export class SupabaseApiClient implements ApiClient {
 		const { data: { user } } = await this.supabase.auth.getUser()
 		return user
 	}
+
+	async addName(userId: string, name: string, origin?: string, meaning?: string, gender: 'masculine' | 'feminine' | 'neutral' = 'neutral'): Promise<string> {
+		try {
+			const { data, error } = await this.serviceRoleClient.rpc('add_user_name', {
+				name_text: name.trim(),
+				user_id: userId,
+				origin_text: origin?.trim() || undefined,
+				meaning_text: meaning?.trim() || undefined,
+				gender_text: gender,
+			})
+
+			if (error) {
+				throw error
+			}
+
+			return data as string
+		} catch (error) {
+			console.error('Error adding name:', error)
+			throw error
+		}
+	}
+
+	async addNamesFromFile(userId: string, names: string[]): Promise<string[]> {
+		const results: string[] = []
+		const errors: string[] = []
+
+		for (const name of names) {
+			const trimmedName = name.trim()
+			if (!trimmedName) continue
+
+			try {
+				const nameId = await this.addName(userId, trimmedName)
+				results.push(nameId)
+			} catch (error) {
+				console.error(`Error adding name "${trimmedName}":`, error)
+				errors.push(trimmedName)
+			}
+		}
+
+		if (errors.length > 0) {
+			console.warn(`Failed to add ${errors.length} names:`, errors)
+		}
+
+		return results
+	}
 }

@@ -55,4 +55,6 @@ export interface ApiClient {
 	getAnalytics(userId: string): Promise<Analytics>
 	createUser(email: string, name: string): Promise<User>
 	linkPartner(userId: string, partnerId: string): Promise<void>
+	addName(userId: string, name: string, origin?: string, meaning?: string, gender?: 'masculine' | 'feminine' | 'neutral'): Promise<string>
+	addNamesFromFile(userId: string, names: string[]): Promise<string[]>
 }

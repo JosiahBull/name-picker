@@ -2,6 +2,10 @@
 
 echo "🔍 Running linters and type checks..."
 
+# Generate supabase types
+echo "🛠️ Generating Supabase types..."
+pnpm run gen-types
+
 # Run type checking
 echo "📋 Type checking..."
 pnpm typecheck

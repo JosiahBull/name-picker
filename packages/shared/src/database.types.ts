@@ -17,10 +17,10 @@ export type Database = {
     Functions: {
       graphql: {
         Args: {
-          query?: string
           operationName?: string
-          variables?: Json
+          query?: string
           extensions?: Json
+          variables?: Json
         }
         Returns: Json
       }
@@ -71,28 +71,34 @@ export type Database = {
           created_at: string | null
           gender: string | null
           id: string
+          is_user_uploaded: boolean | null
           meaning: string | null
           name: string
           origin: string | null
           popularity: number | null
+          uploaded_by: string | null
         }
         Insert: {
           created_at?: string | null
           gender?: string | null
           id?: string
+          is_user_uploaded?: boolean | null
           meaning?: string | null
           name: string
           origin?: string | null
           popularity?: number | null
+          uploaded_by?: string | null
         }
         Update: {
           created_at?: string | null
           gender?: string | null
           id?: string
+          is_user_uploaded?: boolean | null
           meaning?: string | null
           name?: string
           origin?: string | null
           popularity?: number | null
+          uploaded_by?: string | null
         }
         Relationships: []
       }
@@ -176,15 +182,27 @@ export type Database = {
       }
     }
     Functions: {
+      add_user_name: {
+        Args: {
+          name_text: string
+          gender_text?: string
+          meaning_text?: string
+          origin_text?: string
+          user_id: string
+        }
+        Returns: string
+      }
       get_next_unseen_name: {
         Args: { user_id: string }
         Returns: {
           id: string
-          name: string
-          origin: string
-          meaning: string
-          popularity: number
           gender: string
+          is_user_uploaded: boolean
+          uploaded_by: string
+          popularity: number
+          meaning: string
+          origin: string
+          name: string
         }[]
       }
       get_user_analytics: {
@@ -194,12 +212,12 @@ export type Database = {
       get_user_matches: {
         Args: { user_id: string }
         Returns: {
-          id: string
-          name_id: string
           name: string
-          user1_id: string
-          user2_id: string
+          id: string
           created_at: string
+          user2_id: string
+          user1_id: string
+          name_id: string
         }[]
       }
     }

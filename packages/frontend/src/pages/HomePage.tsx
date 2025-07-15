@@ -1,5 +1,5 @@
 import { Box, Typography, Button, Container, Paper } from '@mui/material'
-import { Favorite, Analytics, People } from '@mui/icons-material'
+import { Favorite, Analytics, People, CloudUpload } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { useUser } from '../context/UserContext'
 import Layout from '../components/Layout'
@@ -34,6 +34,16 @@ export default function HomePage() {
 							sx={{ py: 2 }}
 						>
 							Start Swiping
+						</Button>
+
+						<Button
+							variant="outlined"
+							size="large"
+							startIcon={<CloudUpload />}
+							onClick={() => navigate('/upload')}
+							sx={{ py: 2 }}
+						>
+							Upload Names
 						</Button>
 
 						<Button

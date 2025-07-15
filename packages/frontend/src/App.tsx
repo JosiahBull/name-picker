@@ -10,6 +10,7 @@ import HomePage from './pages/HomePage'
 import SwipePage from './pages/SwipePage'
 import MatchesPage from './pages/MatchesPage'
 import AnalyticsPage from './pages/AnalyticsPage'
+import UploadPage from './pages/UploadPage'
 
 function App() {
 	return (
@@ -49,6 +50,14 @@ function App() {
 								element={
 									<ProtectedRoute>
 										<AnalyticsPage />
+									</ProtectedRoute>
+								}
+							/>
+							<Route
+								path="/upload"
+								element={
+									<ProtectedRoute>
+										<UploadPage />
 									</ProtectedRoute>
 								}
 							/>
