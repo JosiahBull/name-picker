@@ -16,6 +16,11 @@ if [ "${CI:-false}" = "true" ] || [ ! -d "node_modules" ]; then
     fi
 fi
 
+# Run build
+echo "🏗️ Building all packages..."
+pnpm run --filter=shared build
+pnpm run --filter=frontend build
+
 # Run type checking
 echo "🔍 Type checking..."
 pnpm -r run typecheck
