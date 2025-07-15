@@ -47,12 +47,6 @@ pnpm run supabase:reset
 
 # Run E2E tests with Playwright
 echo "🎭 Running E2E tests..."
-if [ "${CI:-false}" = "true" ]; then
-    # In CI, run headless
-    npx playwright test
-else
-    # Local development, can be more verbose
-    npx playwright test --reporter=list
-fi
+npx playwright test
 
 echo "✅ All quality checks passed!"
