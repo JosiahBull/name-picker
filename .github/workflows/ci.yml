@@ -27,6 +27,9 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
+      - name: Install supabase CLI
+        run: npm install -g supabase
+
       - name: Run tests
         run: ./scripts/test.sh
 
