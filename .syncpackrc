@@ -1,0 +1,23 @@
+{
+  "dependencyTypes": [
+    "dependencies",
+    "devDependencies",
+    "peerDependencies",
+    "optionalDependencies"
+  ],
+  "indent": "  ",
+  "semverGroups": [
+    {
+      "dependencies": ["**"],
+      "packages": ["**"],
+      "policy": "sameRange"
+    }
+  ],
+  "versionGroups": [
+    {
+      "dependencies": ["**"],
+      "packages": ["**"],
+      "policy": "sameRange"
+    }
+  ]
+}

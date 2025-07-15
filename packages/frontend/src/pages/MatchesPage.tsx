@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react';
 import {
 	Box,
 	Typography,
@@ -8,35 +8,35 @@ import {
 	Container,
 	Chip,
 	Avatar,
-} from '@mui/material'
-import { Favorite, People } from '@mui/icons-material'
-import { Match } from '@name-picker/shared'
-import { useApi } from '../context/ApiContext'
-import { useUser } from '../context/UserContext'
-import Layout from '../components/Layout'
+} from '@mui/material';
+import { Favorite, People } from '@mui/icons-material';
+import { Match } from '@name-picker/shared';
+import { useApi } from '../context/ApiContext';
+import { useUser } from '../context/UserContext';
+import Layout from '../components/Layout';
 
 export default function MatchesPage() {
-	const { api } = useApi()
-	const { currentUser } = useUser()
-	const [matches, setMatches] = useState<Match[]>([])
-	const [loading, setLoading] = useState(true)
+	const { api } = useApi();
+	const { currentUser } = useUser();
+	const [matches, setMatches] = useState<Match[]>([]);
+	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
 		const loadMatches = async () => {
-			if (!currentUser) return
-			
-			try {
-				const userMatches = await api.getMatches(currentUser.id)
-				setMatches(userMatches)
-			} catch (error) {
-				console.error('Failed to load matches:', error)
-			} finally {
-				setLoading(false)
-			}
-		}
+			if (!currentUser) return;
 
-		loadMatches()
-	}, [api, currentUser])
+			try {
+				const userMatches = await api.getMatches(currentUser.id);
+				setMatches(userMatches);
+			} catch (error) {
+				console.error('Failed to load matches:', error);
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		loadMatches();
+	}, [api, currentUser]);
 
 	const formatDate = (date: Date) => {
 		return new Intl.DateTimeFormat('en-US', {
@@ -44,8 +44,8 @@ export default function MatchesPage() {
 			day: 'numeric',
 			hour: '2-digit',
 			minute: '2-digit',
-		}).format(new Date(date))
-	}
+		}).format(new Date(date));
+	};
 
 	return (
 		<Layout title="Your Matches" showBackButton>
@@ -63,8 +63,8 @@ export default function MatchesPage() {
 							No matches yet
 						</Typography>
 						<Typography variant="body1" color="text.secondary">
-							Keep swiping to find names you both love! When you and your partner both like the
-							same name, it will appear here.
+							Keep swiping to find names you both love! When you and your partner both like the same
+							name, it will appear here.
 						</Typography>
 					</Box>
 				) : (
@@ -80,7 +80,7 @@ export default function MatchesPage() {
 						</Box>
 
 						<Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-							{matches.map(match => (
+							{matches.map((match) => (
 								<Card
 									key={match.id}
 									sx={{
@@ -103,12 +103,7 @@ export default function MatchesPage() {
 											<Typography variant="h5" component="h2" sx={{ fontWeight: 600 }}>
 												{match.name}
 											</Typography>
-											<Chip
-												icon={<Favorite />}
-												label="Match"
-												color="primary"
-												variant="outlined"
-											/>
+											<Chip icon={<Favorite />} label="Match" color="primary" variant="outlined" />
 										</Box>
 
 										<Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
@@ -136,5 +131,5 @@ export default function MatchesPage() {
 				)}
 			</Container>
 		</Layout>
-	)
+	);
 }

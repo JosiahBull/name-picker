@@ -1,12 +1,12 @@
-import { Box, Typography, Button, Container, Paper } from '@mui/material'
-import { Favorite, Analytics, People, CloudUpload } from '@mui/icons-material'
-import { useNavigate } from 'react-router-dom'
-import { useUser } from '../context/UserContext'
-import Layout from '../components/Layout'
+import { Box, Typography, Button, Container, Paper } from '@mui/material';
+import { Favorite, Analytics, People, CloudUpload } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
+import { useUser } from '../context/UserContext';
+import Layout from '../components/Layout';
 
 export default function HomePage() {
-	const navigate = useNavigate()
-	const { currentUser } = useUser()
+	const navigate = useNavigate();
+	const { currentUser } = useUser();
 
 	return (
 		<Layout title="Name Picker">
@@ -76,5 +76,5 @@ export default function HomePage() {
 				</Box>
 			</Container>
 		</Layout>
-	)
+	);
 }

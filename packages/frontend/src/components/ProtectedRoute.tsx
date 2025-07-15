@@ -1,17 +1,33 @@
-import { ReactNode } from 'react'
-import { Navigate } from 'react-router-dom'
-import { useUser } from '../context/UserContext'
+import { ReactNode } from 'react';
+import { Navigate } from 'react-router-dom';
+import { Box, CircularProgress } from '@mui/material';
+import { useUser } from '../context/UserContext';
 
 interface ProtectedRouteProps {
-	children: ReactNode
+	children: ReactNode;
 }
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-	const { isAuthenticated } = useUser()
+	const { isAuthenticated, isLoading } = useUser();
 
-	if (!isAuthenticated) {
-		return <Navigate to="/login" replace />
+	if (isLoading) {
+		return (
+			<Box
+				sx={{
+					display: 'flex',
+					justifyContent: 'center',
+					alignItems: 'center',
+					minHeight: '100vh',
+				}}
+			>
+				<CircularProgress />
+			</Box>
+		);
 	}
 
-	return <>{children}</>
+	if (!isAuthenticated) {
+		return <Navigate to="/login" replace />;
+	}
+
+	return <>{children}</>;
 }

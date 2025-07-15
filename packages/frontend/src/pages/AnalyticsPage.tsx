@@ -1,32 +1,32 @@
-import { useState, useEffect } from 'react'
-import { Box, Typography, CircularProgress, Container } from '@mui/material'
-import { Analytics } from '@name-picker/shared'
-import { useApi } from '../context/ApiContext'
-import { useUser } from '../context/UserContext'
-import Layout from '../components/Layout'
+import { useState, useEffect } from 'react';
+import { Box, Typography, CircularProgress, Container } from '@mui/material';
+import { Analytics } from '@name-picker/shared';
+import { useApi } from '../context/ApiContext';
+import { useUser } from '../context/UserContext';
+import Layout from '../components/Layout';
 
 export default function AnalyticsPage() {
-	const { api } = useApi()
-	const { currentUser } = useUser()
-	const [analytics, setAnalytics] = useState<Analytics | null>(null)
-	const [loading, setLoading] = useState(true)
+	const { api } = useApi();
+	const { currentUser } = useUser();
+	const [analytics, setAnalytics] = useState<Analytics | null>(null);
+	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
 		const loadAnalytics = async () => {
-			if (!currentUser) return
-			
-			try {
-				const data = await api.getAnalytics(currentUser.id)
-				setAnalytics(data)
-			} catch (error) {
-				console.error('Failed to load analytics:', error)
-			} finally {
-				setLoading(false)
-			}
-		}
+			if (!currentUser) return;
 
-		loadAnalytics()
-	}, [api, currentUser])
+			try {
+				const data = await api.getAnalytics(currentUser.id);
+				setAnalytics(data);
+			} catch (error) {
+				console.error('Failed to load analytics:', error);
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		loadAnalytics();
+	}, [api, currentUser]);
 
 	if (loading) {
 		return (
@@ -35,7 +35,7 @@ export default function AnalyticsPage() {
 					<CircularProgress size={60} />
 				</Box>
 			</Layout>
-		)
+		);
 	}
 
 	if (!analytics) {
@@ -47,7 +47,7 @@ export default function AnalyticsPage() {
 					</Typography>
 				</Container>
 			</Layout>
-		)
+		);
 	}
 
 	return (
@@ -86,5 +86,5 @@ export default function AnalyticsPage() {
 				</Box>
 			</Container>
 		</Layout>
-	)
+	);
 }

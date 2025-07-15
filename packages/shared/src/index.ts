@@ -1,4 +1,15 @@
-export * from './types'
-export * from './api'
-export * from './database.types'
-export * from './supabase-api'
+// Types
+export type {
+	Name,
+	SwipeAction,
+	Match,
+	User,
+	Analytics,
+	SwipeResult,
+	SwipeDirection,
+	ApiClient,
+} from './types';
+export type { Database } from './database.types';
+
+// API Client
+export { SupabaseApiClient } from './api';

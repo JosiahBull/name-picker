@@ -1,16 +1,16 @@
-import { Box, Typography, Button, Container, Paper, Avatar } from '@mui/material'
-import { Person, Favorite } from '@mui/icons-material'
-import { useUser, UserId } from '../context/UserContext'
-import { useNavigate } from 'react-router-dom'
+import { Box, Typography, Button, Container, Paper, Avatar } from '@mui/material';
+import { Person, Favorite } from '@mui/icons-material';
+import { useUser, UserId } from '../context/UserContext';
+import { useNavigate } from 'react-router-dom';
 
 export default function LoginPage() {
-	const { login, users } = useUser()
-	const navigate = useNavigate()
+	const { login, users } = useUser();
+	const navigate = useNavigate();
 
 	const handleLogin = (userId: UserId) => {
-		login(userId)
-		navigate('/')
-	}
+		login(userId);
+		navigate('/');
+	};
 
 	return (
 		<Box
@@ -95,5 +95,5 @@ export default function LoginPage() {
 				</Paper>
 			</Container>
 		</Box>
-	)
+	);
 }

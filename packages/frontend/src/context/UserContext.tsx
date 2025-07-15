@@ -1,11 +1,11 @@
-import { createContext, useContext, ReactNode, useState, useEffect } from 'react'
+import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 
-export type UserId = 'joe' | 'sam'
+export type UserId = 'joe' | 'sam';
 
 interface UserInfo {
-	id: string // UUID from database
-	name: string
-	displayName: string
+	id: string; // UUID from database
+	name: string;
+	displayName: string;
 }
 
 const USERS: Record<UserId, UserInfo> = {
@@ -19,47 +19,50 @@ const USERS: Record<UserId, UserInfo> = {
 		name: 'sam',
 		displayName: 'Sam',
 	},
-}
+};
 
 interface UserContextType {
-	currentUser: UserInfo | null
-	users: Record<UserId, UserInfo>
-	login: (userId: UserId) => void
-	logout: () => void
-	isAuthenticated: boolean
+	currentUser: UserInfo | null;
+	users: Record<UserId, UserInfo>;
+	login: (userId: UserId) => void;
+	logout: () => void;
+	isAuthenticated: boolean;
+	isLoading: boolean;
 }
 
-const UserContext = createContext<UserContextType | undefined>(undefined)
+const UserContext = createContext<UserContextType | undefined>(undefined);
 
-const USER_STORAGE_KEY = 'name-picker-user'
+const USER_STORAGE_KEY = 'name-picker-user';
 
 interface UserProviderProps {
-	children: ReactNode
+	children: ReactNode;
 }
 
 export function UserProvider({ children }: UserProviderProps) {
-	const [currentUser, setCurrentUser] = useState<UserInfo | null>(null)
+	const [currentUser, setCurrentUser] = useState<UserInfo | null>(null);
+	const [isLoading, setIsLoading] = useState(true);
 
 	// Load user from localStorage on mount
 	useEffect(() => {
-		const savedUserId = localStorage.getItem(USER_STORAGE_KEY) as UserId | null
+		const savedUserId = localStorage.getItem(USER_STORAGE_KEY) as UserId | null;
 		if (savedUserId && USERS[savedUserId]) {
-			setCurrentUser(USERS[savedUserId])
+			setCurrentUser(USERS[savedUserId]);
 		}
-	}, [])
+		setIsLoading(false);
+	}, []);
 
 	const login = (userId: UserId) => {
-		const user = USERS[userId]
+		const user = USERS[userId];
 		if (user) {
-			setCurrentUser(user)
-			localStorage.setItem(USER_STORAGE_KEY, userId)
+			setCurrentUser(user);
+			localStorage.setItem(USER_STORAGE_KEY, userId);
 		}
-	}
+	};
 
 	const logout = () => {
-		setCurrentUser(null)
-		localStorage.removeItem(USER_STORAGE_KEY)
-	}
+		setCurrentUser(null);
+		localStorage.removeItem(USER_STORAGE_KEY);
+	};
 
 	const value: UserContextType = {
 		currentUser,
@@ -67,15 +70,16 @@ export function UserProvider({ children }: UserProviderProps) {
 		login,
 		logout,
 		isAuthenticated: currentUser !== null,
-	}
+		isLoading,
+	};
 
-	return <UserContext.Provider value={value}>{children}</UserContext.Provider>
+	return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 }
 
 export function useUser(): UserContextType {
-	const context = useContext(UserContext)
+	const context = useContext(UserContext);
 	if (context === undefined) {
-		throw new Error('useUser must be used within a UserProvider')
+		throw new Error('useUser must be used within a UserProvider');
 	}
-	return context
+	return context;
 }

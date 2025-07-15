@@ -1,41 +1,42 @@
-import { useState } from 'react'
-import { motion, PanInfo, useMotionValue, useTransform } from 'framer-motion'
-import { Card, CardContent, Typography, Box, Chip } from '@mui/material'
-import { Name, SwipeDirection } from '@name-picker/shared'
+import { useState } from 'react';
+import { motion, PanInfo, useMotionValue, useTransform } from 'framer-motion';
+import { Card, CardContent, Typography, Box, Chip } from '@mui/material';
+import { Name, SwipeDirection } from '@name-picker/shared';
 
 interface NameCardProps {
-	name: Name
-	onSwipe: (direction: SwipeDirection) => void
-	disabled?: boolean
+	name: Name;
+	onSwipe: (direction: SwipeDirection) => void;
+	disabled?: boolean;
 }
 
 export default function NameCard({ name, onSwipe, disabled = false }: NameCardProps) {
-	const [exitX, setExitX] = useState(0)
-	const x = useMotionValue(0)
-	const rotate = useTransform(x, [-200, 200], [-30, 30])
-	const opacity = useTransform(x, [-200, -150, 0, 150, 200], [0, 1, 1, 1, 0])
+	const [exitX, setExitX] = useState(0);
+	const x = useMotionValue(0);
+	const rotate = useTransform(x, [-200, 200], [-30, 30]);
+	const opacity = useTransform(x, [-200, -150, 0, 150, 200], [0, 1, 1, 1, 0]);
 
-	const handleDragEnd = (_event: any, info: PanInfo) => {
-		const threshold = 100
-		const { offset, velocity } = info
+	const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+		const threshold = 100;
+		const { offset, velocity } = info;
 
 		if (offset.x > threshold || velocity.x > 500) {
-			setExitX(1000)
-			onSwipe('right')
+			setExitX(1000);
+			onSwipe('right');
 		} else if (offset.x < -threshold || velocity.x < -500) {
-			setExitX(-1000)
-			onSwipe('left')
+			setExitX(-1000);
+			onSwipe('left');
 		}
-	}
+	};
 
 	const handleSwipeButton = (direction: SwipeDirection) => {
-		if (disabled) return
-		setExitX(direction === 'right' ? 1000 : -1000)
-		onSwipe(direction)
-	}
+		if (disabled) return;
+		setExitX(direction === 'right' ? 1000 : -1000);
+		onSwipe(direction);
+	};
 
 	return (
 		<motion.div
+			data-testid="name-card"
 			style={{
 				x,
 				rotate,
@@ -205,5 +206,5 @@ export default function NameCard({ name, onSwipe, disabled = false }: NameCardPr
 				</motion.button>
 			</Box>
 		</motion.div>
-	)
+	);
 }

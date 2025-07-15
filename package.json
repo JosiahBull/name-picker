@@ -1,16 +1,17 @@
 {
   "name": "name-picker",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "private": true,
   "description": "A Tinder-style name selection app for couples",
   "type": "module",
   "scripts": {
-    "dev": "pnpm -r --parallel run dev",
-    "build": "pnpm -r run build",
+    "setup": "./scripts/setup.sh",
+    "dev": "./scripts/dev.sh",
+    "build": "./scripts/build.sh",
+    "test": "./scripts/test.sh",
     "lint": "pnpm -r run lint",
     "format": "pnpm -r run format",
     "typecheck": "pnpm -r run typecheck",
-    "test": "pnpm -r run test",
     "clean": "pnpm -r run clean && rimraf node_modules",
     "supabase:start": "pnpm dlx supabase@latest start",
     "supabase:stop": "pnpm dlx supabase@latest stop",
@@ -18,20 +19,14 @@
     "supabase:reset": "pnpm dlx supabase@latest db reset",
     "supabase:link": "pnpm dlx supabase@latest link",
     "supabase:push": "pnpm dlx supabase@latest db push",
-    "gen-types": "pnpm dlx supabase@latest gen types typescript --local > packages/shared/src/database.types.ts"
-  },
-  "dependencies": {
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.1",
-    "@mui/icons-material": "^7.2.0",
-    "@mui/material": "^7.2.0",
-    "@supabase/supabase-js": "^2.51.0",
-    "framer-motion": "^11.17.4",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "react-router-dom": "^7.6.3"
+    "gen-types": "pnpm dlx supabase@latest gen types typescript --local > packages/shared/src/database.types.ts",
+    "syncpack:check": "syncpack list-mismatches",
+    "syncpack:fix": "syncpack fix-mismatches",
+    "update:latest": "pnpm update --latest"
   },
   "devDependencies": {
+    "@eslint/js": "^9.31.0",
+    "@playwright/test": "^1.54.1",
     "@typescript-eslint/eslint-plugin": "^8.37.0",
     "@typescript-eslint/parser": "^8.37.0",
     "eslint": "^9.31.0",
@@ -41,10 +36,11 @@
     "prettier": "^3.6.2",
     "rimraf": "^6.0.1",
     "supabase": "^2.30.4",
+    "syncpack": "^13.0.4",
     "typescript": "^5.8.3"
   },
   "engines": {
-    "node": ">=18.0.0",
+    "node": ">=22.0.0",
     "pnpm": ">=10.0.0"
   },
   "packageManager": "pnpm@10.13.1"

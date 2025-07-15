@@ -1,44 +1,44 @@
-import { useState, useEffect } from 'react'
-import { Box, Typography, CircularProgress, Button } from '@mui/material'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Name, SwipeDirection } from '@name-picker/shared'
-import { useApi } from '../context/ApiContext'
-import { useUser } from '../context/UserContext'
-import Layout from '../components/Layout'
-import NameCard from '../components/NameCard'
+import { useState, useEffect, useCallback } from 'react';
+import { Box, Typography, CircularProgress, Button } from '@mui/material';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Name, SwipeDirection } from '@name-picker/shared';
+import { useApi } from '../context/ApiContext';
+import { useUser } from '../context/UserContext';
+import Layout from '../components/Layout';
+import NameCard from '../components/NameCard';
 
 export default function SwipePage() {
-	const { api } = useApi()
-	const { currentUser } = useUser()
-	const [currentName, setCurrentName] = useState<Name | null>(null)
-	const [loading, setLoading] = useState(true)
-	const [isMatch, setIsMatch] = useState(false)
-	const [swipeCount, setSwipeCount] = useState(0)
+	const { api } = useApi();
+	const { currentUser } = useUser();
+	const [currentName, setCurrentName] = useState<Name | null>(null);
+	const [loading, setLoading] = useState(true);
+	const [isMatch, setIsMatch] = useState(false);
+	const [swipeCount, setSwipeCount] = useState(0);
 
-	const loadNextName = async () => {
-		if (!currentUser) return
-		
-		setLoading(true)
+	const loadNextName = useCallback(async () => {
+		if (!currentUser) return;
+
+		setLoading(true);
 		try {
-			const name = await api.getNextName(currentUser.id)
-			setCurrentName(name)
+			const name = await api.getNextName(currentUser.id);
+			setCurrentName(name);
 		} catch (error) {
-			console.error('Failed to load next name:', error)
+			console.error('Failed to load next name:', error);
 		} finally {
-			setLoading(false)
+			setLoading(false);
 		}
-	}
+	}, [api, currentUser]);
 
 	useEffect(() => {
 		if (currentUser) {
-			loadNextName()
+			loadNextName();
 		}
-	}, [currentUser])
+	}, [currentUser, loadNextName]);
 
 	const handleSwipe = async (direction: SwipeDirection) => {
-		if (!currentName || !currentUser) return
+		if (!currentName || !currentUser) return;
 
-		setSwipeCount(prev => prev + 1)
+		setSwipeCount((prev) => prev + 1);
 
 		try {
 			const result = await api.swipeName({
@@ -46,24 +46,24 @@ export default function SwipePage() {
 				userId: currentUser.id,
 				action: direction === 'right' ? 'like' : 'dislike',
 				timestamp: new Date(),
-			})
+			});
 
 			if (result.isMatch) {
-				setIsMatch(true)
+				setIsMatch(true);
 				setTimeout(() => {
-					setIsMatch(false)
-					loadNextName()
-				}, 2000)
+					setIsMatch(false);
+					loadNextName();
+				}, 2000);
 			} else {
 				setTimeout(() => {
-					loadNextName()
-				}, 300)
+					loadNextName();
+				}, 300);
 			}
 		} catch (error) {
-			console.error('Failed to process swipe:', error)
-			loadNextName()
+			console.error('Failed to process swipe:', error);
+			loadNextName();
 		}
-	}
+	};
 
 	return (
 		<Layout title="Swipe Names" showBackButton>
@@ -148,5 +148,5 @@ export default function SwipePage() {
 				)}
 			</Box>
 		</Layout>
-	)
+	);
 }

@@ -1,34 +1,34 @@
-import { createContext, useContext, ReactNode } from 'react'
-import { ApiClient, SupabaseApiClient } from '@name-picker/shared'
+import { createContext, useContext, ReactNode } from 'react';
+import { ApiClient, SupabaseApiClient } from '@name-picker/shared';
 
 interface ApiContextType {
-	api: ApiClient
+	api: ApiClient;
 }
 
-const ApiContext = createContext<ApiContextType | undefined>(undefined)
+const ApiContext = createContext<ApiContextType | undefined>(undefined);
 
 interface ApiProviderProps {
-	children: ReactNode
+	children: ReactNode;
 }
 
 export function ApiProvider({ children }: ApiProviderProps) {
-	const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-	const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-	const serviceRoleKey = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY
+	const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+	const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+	const serviceRoleKey = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
 
 	if (!supabaseUrl || !supabaseKey) {
-		throw new Error('Missing Supabase environment variables')
+		throw new Error('Missing Supabase environment variables');
 	}
 
-	const api = new SupabaseApiClient(supabaseUrl, supabaseKey, serviceRoleKey)
+	const api = new SupabaseApiClient(supabaseUrl, supabaseKey, serviceRoleKey);
 
-	return <ApiContext.Provider value={{ api }}>{children}</ApiContext.Provider>
+	return <ApiContext.Provider value={{ api }}>{children}</ApiContext.Provider>;
 }
 
 export function useApi(): ApiContextType {
-	const context = useContext(ApiContext)
+	const context = useContext(ApiContext);
 	if (context === undefined) {
-		throw new Error('useApi must be used within an ApiProvider')
+		throw new Error('useApi must be used within an ApiProvider');
 	}
-	return context
+	return context;
 }

@@ -1,172 +1,298 @@
-import { Name, SwipeAction, Match, User, Analytics, SwipeResult, ApiClient } from './types'
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { Database } from './database.types';
+import { Name, SwipeAction, Match, User, Analytics, SwipeResult, ApiClient } from './types';
 
-export class MockApiClient implements ApiClient {
-	private mockNames: Name[] = [
-		{
-			id: '1',
-			name: 'Smith',
-			origin: 'English',
-			meaning: 'Metalworker',
-			popularity: 95,
-			gender: 'neutral',
-		},
-		{
-			id: '2',
-			name: 'Johnson',
-			origin: 'English',
-			meaning: "Son of John",
-			popularity: 90,
-			gender: 'neutral',
-		},
-		{
-			id: '3',
-			name: 'Williams',
-			origin: 'English',
-			meaning: "Son of William",
-			popularity: 85,
-			gender: 'neutral',
-		},
-		{
-			id: '4',
-			name: 'Brown',
-			origin: 'English',
-			meaning: 'Color name',
-			popularity: 80,
-			gender: 'neutral',
-		},
-		{
-			id: '5',
-			name: 'Jones',
-			origin: 'Welsh',
-			meaning: "Son of John",
-			popularity: 88,
-			gender: 'neutral',
-		},
-		{
-			id: '6',
-			name: 'Garcia',
-			origin: 'Spanish',
-			meaning: 'Bear',
-			popularity: 75,
-			gender: 'neutral',
-		},
-		{
-			id: '7',
-			name: 'Miller',
-			origin: 'English',
-			meaning: 'Grain grinder',
-			popularity: 78,
-			gender: 'neutral',
-		},
-		{
-			id: '8',
-			name: 'Davis',
-			origin: 'Welsh',
-			meaning: "Son of David",
-			popularity: 82,
-			gender: 'neutral',
-		},
-	]
+export class SupabaseApiClient implements ApiClient {
+	private supabase: SupabaseClient<Database>;
+	private serviceRoleClient: SupabaseClient<Database>;
 
-	private currentIndex = 0
-	private swipes: SwipeAction[] = []
-	private matches: Match[] = []
+	constructor(supabaseUrl: string, supabaseKey: string, serviceRoleKey?: string) {
+		this.supabase = createClient<Database>(supabaseUrl, supabaseKey);
+		this.serviceRoleClient = createClient<Database>(supabaseUrl, serviceRoleKey || supabaseKey, {
+			auth: {
+				autoRefreshToken: false,
+				persistSession: false,
+			},
+		});
+	}
 
-	async getNextName(_userId: string): Promise<Name | null> {
-		if (this.currentIndex >= this.mockNames.length) {
-			return null
+	async getNextName(userId: string): Promise<Name | null> {
+		try {
+			// Use the database function to get unseen names for this user
+			const { data, error } = await this.serviceRoleClient.rpc('get_next_unseen_name', {
+				user_id: userId,
+			});
+
+			if (error) {
+				throw error;
+			}
+
+			if (data && data.length > 0) {
+				const nameData = data[0];
+				return {
+					id: nameData.id,
+					name: nameData.name,
+					origin: nameData.origin || undefined,
+					meaning: nameData.meaning || undefined,
+					popularity: nameData.popularity || undefined,
+					gender: (nameData.gender as 'masculine' | 'feminine' | 'neutral') || undefined,
+				};
+			}
+
+			return null;
+		} catch (error) {
+			console.error('Error fetching next name:', error);
+			throw error;
 		}
-		return this.mockNames[this.currentIndex++]
 	}
 
 	async swipeName(action: SwipeAction): Promise<SwipeResult> {
-		this.swipes.push(action)
-		
-		const name = this.mockNames.find(n => n.id === action.nameId)
-		if (!name) {
-			throw new Error('Name not found')
-		}
+		try {
+			// Use service role client to bypass RLS for demo purposes
+			const { error: swipeError } = await this.serviceRoleClient.from('swipes').insert({
+				user_id: action.userId,
+				name_id: action.nameId,
+				action: action.action,
+			});
 
-		const isMatch = action.action === 'like' && Math.random() > 0.7
-
-		if (isMatch) {
-			const match: Match = {
-				id: `match-${Date.now()}`,
-				nameId: action.nameId,
-				name: name.name,
-				users: [action.userId, 'partner-id'],
-				matchedAt: new Date(),
+			if (swipeError) {
+				throw swipeError;
 			}
-			this.matches.push(match)
-		}
 
-		return { isMatch, name }
+			// Get the name details
+			const { data: nameData, error: nameError } = await this.serviceRoleClient
+				.from('names')
+				.select('*')
+				.eq('id', action.nameId)
+				.single();
+
+			if (nameError) {
+				throw nameError;
+			}
+
+			const name: Name = {
+				id: nameData.id,
+				name: nameData.name,
+				origin: nameData.origin || undefined,
+				meaning: nameData.meaning || undefined,
+				popularity: nameData.popularity || undefined,
+				gender: (nameData.gender as 'masculine' | 'feminine' | 'neutral') || undefined,
+			};
+
+			// Check if this created a match (the trigger should handle this automatically)
+			if (action.action === 'like') {
+				const { data: matchData } = await this.serviceRoleClient
+					.from('matches')
+					.select('*')
+					.eq('name_id', action.nameId)
+					.or(`user1_id.eq.${action.userId},user2_id.eq.${action.userId}`)
+					.order('created_at', { ascending: false })
+					.limit(1);
+
+				const isMatch = Boolean(matchData && matchData.length > 0);
+				return { isMatch, name };
+			}
+
+			return { isMatch: false, name };
+		} catch (error) {
+			console.error('Error processing swipe:', error);
+			throw error;
+		}
 	}
 
 	async getMatches(userId: string): Promise<Match[]> {
-		return this.matches.filter(match => match.users.includes(userId))
-	}
+		try {
+			// Use the database function to get matches for this user
+			const { data, error } = await this.serviceRoleClient.rpc('get_user_matches', {
+				user_id: userId,
+			});
 
-	async getUserProfile(userId: string): Promise<User> {
-		return {
-			id: userId,
-			email: 'user@example.com',
-			name: 'Demo User',
-			partnerId: 'partner-id',
-			createdAt: new Date(),
+			if (error) {
+				throw error;
+			}
+
+			return (data || []).map((match) => ({
+				id: match.id,
+				nameId: match.name_id,
+				name: match.name,
+				users: [match.user1_id, match.user2_id],
+				matchedAt: new Date(match.created_at),
+			}));
+		} catch (error) {
+			console.error('Error fetching matches:', error);
+			throw error;
 		}
 	}
 
-	async getAnalytics(_userId: string): Promise<Analytics> {
-		const likes = this.swipes.filter(s => s.action === 'like').length
-		const dislikes = this.swipes.filter(s => s.action === 'dislike').length
-		
-		return {
-			totalSwipes: this.swipes.length,
-			likes,
-			dislikes,
-			matches: this.matches.length,
-			averageSwipeTime: 2.5,
-			mostPopularNames: ['Smith', 'Johnson', 'Brown'],
-			sessionDuration: 300,
+	async getUserProfile(userId: string): Promise<User> {
+		try {
+			const { data, error } = await this.supabase
+				.from('user_profiles')
+				.select('*')
+				.eq('id', userId)
+				.single();
+
+			if (error) {
+				throw error;
+			}
+
+			return {
+				id: data.id,
+				email: `${data.username}@example.com`, // Mock email for now
+				name: data.display_name,
+				partnerId: data.username === 'joe' ? 'sam' : 'joe', // Mock partner logic
+				createdAt: new Date(data.created_at!),
+			};
+		} catch (error) {
+			console.error('Error fetching user profile:', error);
+			throw error;
+		}
+	}
+
+	async getAnalytics(userId: string): Promise<Analytics> {
+		try {
+			// Use the database function we created
+			const { data, error } = await this.supabase.rpc('get_user_analytics', {
+				target_user_id: userId,
+			});
+
+			if (error) {
+				throw error;
+			}
+
+			return data as unknown as Analytics;
+		} catch (error) {
+			console.error('Error fetching analytics:', error);
+			// Return default analytics if there's an error
+			return {
+				totalSwipes: 0,
+				likes: 0,
+				dislikes: 0,
+				matches: 0,
+				averageSwipeTime: 2.5,
+				mostPopularNames: ['Smith', 'Johnson', 'Brown'],
+				sessionDuration: 300,
+			};
 		}
 	}
 
 	async createUser(email: string, name: string): Promise<User> {
-		return {
-			id: `user-${Date.now()}`,
-			email,
-			name,
-			createdAt: new Date(),
+		try {
+			// In a real implementation, this would use Supabase Auth
+			// For now, we'll assume users are created through the auth flow
+			const username = email.split('@')[0];
+
+			const { data, error } = await this.supabase
+				.from('user_profiles')
+				.insert({
+					id: '00000000-0000-0000-0000-000000000000', // This would be the actual auth user ID
+					username: username as 'joe' | 'sam',
+					display_name: name,
+				})
+				.select()
+				.single();
+
+			if (error) {
+				throw error;
+			}
+
+			return {
+				id: data.id,
+				email,
+				name: data.display_name,
+				createdAt: new Date(data.created_at!),
+			};
+		} catch (error) {
+			console.error('Error creating user:', error);
+			throw error;
 		}
 	}
 
 	async linkPartner(_userId: string, _partnerId: string): Promise<void> {
-		// Mock implementation
-		console.log(`Linking user ${_userId} with partner ${_partnerId}`)
+		// In a real implementation, this would update the user profile
+		// with partner information
+		console.log(`Linking user ${_userId} with partner ${_partnerId}`);
 	}
 
-	async addName(_userId: string, name: string, origin?: string, meaning?: string, gender: 'masculine' | 'feminine' | 'neutral' = 'neutral'): Promise<string> {
-		const newName: Name = {
-			id: `user-${Date.now()}`,
-			name,
-			origin,
-			meaning,
-			gender,
-			popularity: 100,
+	// Helper method to set the auth session
+	setAuthSession(accessToken: string) {
+		// This would be used to set the auth session when a user logs in
+		this.supabase.auth.setSession({
+			access_token: accessToken,
+			refresh_token: '',
+		});
+	}
+
+	// Helper method to sign in a user (for testing with our seeded users)
+	async signInWithEmail(email: string, password: string) {
+		const { data, error } = await this.supabase.auth.signInWithPassword({
+			email,
+			password,
+		});
+
+		if (error) {
+			throw error;
 		}
-		this.mockNames.push(newName)
-		return newName.id
+
+		return data;
 	}
 
-	async addNamesFromFile(_userId: string, names: string[]): Promise<string[]> {
-		const results: string[] = []
+	// Helper method to get current user
+	async getCurrentUser() {
+		const {
+			data: { user },
+		} = await this.supabase.auth.getUser();
+		return user;
+	}
+
+	async addName(
+		userId: string,
+		name: string,
+		origin?: string,
+		meaning?: string,
+		gender: 'masculine' | 'feminine' | 'neutral' = 'neutral',
+	): Promise<string> {
+		try {
+			const { data, error } = await this.serviceRoleClient.rpc('add_user_name', {
+				name_text: name.trim(),
+				user_id: userId,
+				origin_text: origin?.trim() || undefined,
+				meaning_text: meaning?.trim() || undefined,
+				gender_text: gender,
+			});
+
+			if (error) {
+				throw error;
+			}
+
+			return data as string;
+		} catch (error) {
+			console.error('Error adding name:', error);
+			throw error;
+		}
+	}
+
+	async addNamesFromFile(userId: string, names: string[]): Promise<string[]> {
+		const results: string[] = [];
+		const errors: string[] = [];
+
 		for (const name of names) {
-			if (name.trim()) {
-				const id = await this.addName(_userId, name.trim())
-				results.push(id)
+			const trimmedName = name.trim();
+			if (!trimmedName) continue;
+
+			try {
+				const nameId = await this.addName(userId, trimmedName);
+				results.push(nameId);
+			} catch (error) {
+				console.error(`Error adding name "${trimmedName}":`, error);
+				errors.push(trimmedName);
 			}
 		}
-		return results
+
+		if (errors.length > 0) {
+			console.warn(`Failed to add ${errors.length} names:`, errors);
+		}
+
+		return results;
 	}
 }

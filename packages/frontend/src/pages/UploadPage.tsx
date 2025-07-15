@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState } from 'react';
 import {
 	Box,
 	Typography,
@@ -14,99 +14,107 @@ import {
 	InputLabel,
 	Select,
 	MenuItem,
-} from '@mui/material'
-import { CloudUpload, Add, FileUpload } from '@mui/icons-material'
-import { useApi } from '../context/ApiContext'
-import { useUser } from '../context/UserContext'
-import Layout from '../components/Layout'
+} from '@mui/material';
+import { CloudUpload, Add, FileUpload } from '@mui/icons-material';
+import { useApi } from '../context/ApiContext';
+import { useUser } from '../context/UserContext';
+import Layout from '../components/Layout';
 
 export default function UploadPage() {
-	const { api } = useApi()
-	const { currentUser } = useUser()
-	const [singleName, setSingleName] = useState('')
-	const [origin, setOrigin] = useState('')
-	const [meaning, setMeaning] = useState('')
-	const [gender, setGender] = useState<'masculine' | 'feminine' | 'neutral'>('neutral')
-	const [loading, setLoading] = useState(false)
-	const [fileLoading, setFileLoading] = useState(false)
-	const [successMessage, setSuccessMessage] = useState('')
-	const [errorMessage, setErrorMessage] = useState('')
-	const [uploadedNames, setUploadedNames] = useState<string[]>([])
+	const { api } = useApi();
+	const { currentUser } = useUser();
+	const [singleName, setSingleName] = useState('');
+	const [origin, setOrigin] = useState('');
+	const [meaning, setMeaning] = useState('');
+	const [gender, setGender] = useState<'masculine' | 'feminine' | 'neutral'>('neutral');
+	const [loading, setLoading] = useState(false);
+	const [fileLoading, setFileLoading] = useState(false);
+	const [successMessage, setSuccessMessage] = useState('');
+	const [errorMessage, setErrorMessage] = useState('');
+	const [uploadedNames, setUploadedNames] = useState<string[]>([]);
 
 	const showMessage = (message: string, isError = false) => {
 		if (isError) {
-			setErrorMessage(message)
-			setSuccessMessage('')
+			setErrorMessage(message);
+			setSuccessMessage('');
 		} else {
-			setSuccessMessage(message)
-			setErrorMessage('')
+			setSuccessMessage(message);
+			setErrorMessage('');
 		}
 		setTimeout(() => {
-			setSuccessMessage('')
-			setErrorMessage('')
-		}, 5000)
-	}
+			setSuccessMessage('');
+			setErrorMessage('');
+		}, 5000);
+	};
 
 	const handleSingleNameSubmit = async () => {
-		if (!currentUser || !singleName.trim()) return
+		if (!currentUser || !singleName.trim()) return;
 
-		setLoading(true)
+		setLoading(true);
 		try {
-			await api.addName(currentUser.id, singleName.trim(), origin || undefined, meaning || undefined, gender)
-			setUploadedNames(prev => [...prev, singleName.trim()])
-			showMessage(`Successfully added "${singleName.trim()}"!`)
-			setSingleName('')
-			setOrigin('')
-			setMeaning('')
-			setGender('neutral')
+			await api.addName(
+				currentUser.id,
+				singleName.trim(),
+				origin || undefined,
+				meaning || undefined,
+				gender,
+			);
+			setUploadedNames((prev) => [...prev, singleName.trim()]);
+			showMessage(`Successfully added "${singleName.trim()}"!`);
+			setSingleName('');
+			setOrigin('');
+			setMeaning('');
+			setGender('neutral');
 		} catch (error) {
-			console.error('Failed to add name:', error)
-			showMessage('Failed to add name. Please try again.', true)
+			console.error('Failed to add name:', error);
+			showMessage('Failed to add name. Please try again.', true);
 		} finally {
-			setLoading(false)
+			setLoading(false);
 		}
-	}
+	};
 
 	const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-		const file = event.target.files?.[0]
-		if (!file || !currentUser) return
+		const file = event.target.files?.[0];
+		if (!file || !currentUser) return;
 
 		if (!file.name.endsWith('.txt')) {
-			showMessage('Please upload a .txt file.', true)
-			return
+			showMessage('Please upload a .txt file.', true);
+			return;
 		}
 
-		setFileLoading(true)
+		setFileLoading(true);
 		try {
-			const text = await file.text()
+			const text = await file.text();
 			const names = text
 				.split('\n')
-				.map(name => name.trim())
-				.filter(name => name.length > 0)
+				.map((name) => name.trim())
+				.filter((name) => name.length > 0);
 
 			if (names.length === 0) {
-				showMessage('No valid names found in the file.', true)
-				return
+				showMessage('No valid names found in the file.', true);
+				return;
 			}
 
-			const addedIds = await api.addNamesFromFile(currentUser.id, names)
-			const addedNames = names.slice(0, addedIds.length)
-			setUploadedNames(prev => [...prev, ...addedNames])
-			
+			const addedIds = await api.addNamesFromFile(currentUser.id, names);
+			const addedNames = names.slice(0, addedIds.length);
+			setUploadedNames((prev) => [...prev, ...addedNames]);
+
 			if (addedIds.length === names.length) {
-				showMessage(`Successfully added ${addedIds.length} names!`)
+				showMessage(`Successfully added ${addedIds.length} names!`);
 			} else {
-				showMessage(`Added ${addedIds.length} out of ${names.length} names. Some may have been duplicates.`)
+				showMessage(
+					`Added ${addedIds.length} out of ${names.length} names. Some may have been duplicates.`,
+				);
 			}
 		} catch (error) {
-			console.error('Failed to upload file:', error)
-			showMessage('Failed to upload file. Please try again.', true)
+			console.error('Failed to upload file:', error);
+			showMessage('Failed to upload file. Please try again.', true);
 		} finally {
-			setFileLoading(false)
+			setFileLoading(false);
 			// Reset the file input
-			event.target.value = ''
+			event.target.value = '';
 		}
-	}
+	};
 
 	return (
 		<Layout title="Upload Names" showBackButton>
@@ -125,12 +133,17 @@ export default function UploadPage() {
 
 				{/* Single Name Upload */}
 				<Paper sx={{ p: 3, mb: 3 }}>
-					<Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+					<Typography
+						variant="h5"
+						gutterBottom
+						sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+					>
 						<Add />
 						Add Single Name
 					</Typography>
 					<Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-						Propose a new last name for consideration. You can add optional details to help others understand the name's background.
+						Propose a new last name for consideration. You can add optional details to help others
+						understand the name's background.
 					</Typography>
 
 					<Stack spacing={2}>
@@ -142,7 +155,7 @@ export default function UploadPage() {
 							placeholder="e.g., Martinez"
 							required
 						/>
-						
+
 						<TextField
 							label="Origin (Optional)"
 							value={origin}
@@ -150,7 +163,7 @@ export default function UploadPage() {
 							fullWidth
 							placeholder="e.g., Spanish"
 						/>
-						
+
 						<TextField
 							label="Meaning (Optional)"
 							value={meaning}
@@ -188,12 +201,17 @@ export default function UploadPage() {
 
 				{/* File Upload */}
 				<Paper sx={{ p: 3, mb: 3 }}>
-					<Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+					<Typography
+						variant="h5"
+						gutterBottom
+						sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+					>
 						<CloudUpload />
 						Upload from File
 					</Typography>
 					<Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-						Upload a .txt file with one name per line. This is perfect for bulk uploads of name lists.
+						Upload a .txt file with one name per line. This is perfect for bulk uploads of name
+						lists.
 					</Typography>
 
 					<Box sx={{ textAlign: 'center' }}>
@@ -217,13 +235,15 @@ export default function UploadPage() {
 								{fileLoading ? 'Uploading...' : 'Choose .txt File'}
 							</Button>
 						</label>
-						
+
 						<Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
 							Example file format:
 							<br />
 							<code>
-								Smith<br />
-								Johnson<br />
+								Smith
+								<br />
+								Johnson
+								<br />
 								Williams
 							</code>
 						</Typography>
@@ -250,11 +270,12 @@ export default function UploadPage() {
 				{/* Info Box */}
 				<Alert severity="info" sx={{ mt: 3 }}>
 					<Typography variant="body2">
-						<strong>💡 Pro tip:</strong> Names you upload will appear first when swiping, giving them priority over the default name list. 
-						This ensures your personalized suggestions get seen first!
+						<strong>💡 Pro tip:</strong> Names you upload will appear first when swiping, giving
+						them priority over the default name list. This ensures your personalized suggestions get
+						seen first!
 					</Typography>
 				</Alert>
 			</Box>
 		</Layout>
-	)
+	);
 }

@@ -1,4 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Set locale for reproducibility
+export LC_ALL=C
 
 echo "🚀 Starting development servers..."
 
@@ -10,13 +14,9 @@ fi
 
 # Ensure the database has been brought up with the latest migrations
 echo "🗄️ Ensuring database is up to date..."
-pnpm run supabase:reset
-pnpm run gen-types
-
-# Build shared package first
-echo "🔨 Building shared package..."
-pnpm --filter @name-picker/shared build
+pnpm supabase:reset
+pnpm gen-types
 
 # Start all dev servers
 echo "🏃 Starting all development servers..."
-pnpm dev
+pnpm -r --parallel run dev

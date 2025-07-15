@@ -1,42 +1,37 @@
-import { ReactNode } from 'react'
-import { AppBar, Toolbar, Typography, IconButton, Box, Button, Avatar } from '@mui/material'
-import { ArrowBack, Logout, Person } from '@mui/icons-material'
-import { useNavigate } from 'react-router-dom'
-import { useUser } from '../context/UserContext'
+import { ReactNode } from 'react';
+import { AppBar, Toolbar, Typography, IconButton, Box, Button, Avatar } from '@mui/material';
+import { ArrowBack, Logout, Person } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
+import { useUser } from '../context/UserContext';
 
 interface LayoutProps {
-	children: ReactNode
-	title: string
-	showBackButton?: boolean
+	children: ReactNode;
+	title: string;
+	showBackButton?: boolean;
 }
 
 export default function Layout({ children, title, showBackButton = false }: LayoutProps) {
-	const navigate = useNavigate()
-	const { currentUser, logout } = useUser()
+	const navigate = useNavigate();
+	const { currentUser, logout } = useUser();
 
 	const handleLogout = () => {
-		logout()
-		navigate('/login')
-	}
+		logout();
+		navigate('/login');
+	};
 
 	return (
 		<Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
 			<AppBar position="static" color="primary">
 				<Toolbar>
 					{showBackButton && (
-						<IconButton
-							edge="start"
-							color="inherit"
-							onClick={() => navigate(-1)}
-							sx={{ mr: 2 }}
-						>
+						<IconButton edge="start" color="inherit" onClick={() => navigate(-1)} sx={{ mr: 2 }}>
 							<ArrowBack />
 						</IconButton>
 					)}
 					<Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
 						{title}
 					</Typography>
-					
+
 					{currentUser && (
 						<Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
 							<Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -58,9 +53,9 @@ export default function Layout({ children, title, showBackButton = false }: Layo
 								color="inherit"
 								startIcon={<Logout />}
 								onClick={handleLogout}
-								sx={{ 
+								sx={{
 									ml: 1,
-									'& .MuiButton-startIcon': { mr: { xs: 0, sm: 1 } }
+									'& .MuiButton-startIcon': { mr: { xs: 0, sm: 1 } },
 								}}
 							>
 								<Box sx={{ display: { xs: 'none', sm: 'block' } }}>Logout</Box>
@@ -71,5 +66,5 @@ export default function Layout({ children, title, showBackButton = false }: Layo
 			</AppBar>
 			<Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>{children}</Box>
 		</Box>
-	)
+	);
 }
