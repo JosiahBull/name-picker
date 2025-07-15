@@ -47,7 +47,6 @@ CREATE TABLE public.matches (
     user2_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     
-    -- Ensure user1_id < user2_id to avoid duplicates
     CHECK (user1_id < user2_id),
     UNIQUE(name_id, user1_id, user2_id)
 );
@@ -70,37 +69,29 @@ RETURNS TRIGGER AS $$
 DECLARE
     other_user_id UUID;
     user1 UUID;
-    user2 UUID;
-BEGIN
-    -- Only proceed if this is a 'like' action
-    IF NEW.action = 'like' THEN
-        -- Find if another user has also liked this name
-        SELECT user_id INTO other_user_id
-        FROM public.swipes
-        WHERE name_id = NEW.name_id 
-            AND user_id != NEW.user_id 
-            AND action = 'like'
-        LIMIT 1;
-        
-        -- If we found a mutual like, create a match
-        IF other_user_id IS NOT NULL THEN
-            -- Ensure consistent ordering for user IDs
-            IF NEW.user_id < other_user_id THEN
-                user1 := NEW.user_id;
-                user2 := other_user_id;
-            ELSE
-                user1 := other_user_id;
-                user2 := NEW.user_id;
-            END IF;
-            
-            -- Insert the match (ON CONFLICT DO NOTHING to handle race conditions)
+    BEGIN
+        -- Only proceed if this is a 'like' action
+        IF NEW.action = 'like' THEN
+            -- Find all other users who have also liked this name and create matches
             INSERT INTO public.matches (name_id, user1_id, user2_id)
-            VALUES (NEW.name_id, user1, user2)
+            SELECT
+                NEW.name_id,
+                CASE
+                    WHEN NEW.user_id < s.user_id THEN NEW.user_id
+                    ELSE s.user_id
+                END AS user1_id,
+                CASE
+                    WHEN NEW.user_id > s.user_id THEN NEW.user_id
+                    ELSE s.user_id
+                END AS user2_id
+            FROM public.swipes s
+            WHERE s.name_id = NEW.name_id
+              AND s.user_id != NEW.user_id
+              AND s.action = 'like'
             ON CONFLICT (name_id, user1_id, user2_id) DO NOTHING;
         END IF;
-    END IF;
-    
-    RETURN NEW;
+
+        RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 

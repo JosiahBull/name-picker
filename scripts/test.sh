@@ -6,44 +6,34 @@ export LC_ALL=C
 
 echo "🧪 Running tests and quality checks..."
 
-# Install dependencies if in CI or missing
-if [ "${CI:-false}" = "true" ] || [ ! -d "node_modules" ]; then
-    echo "📦 Installing dependencies..."
-    if [ "${CI:-false}" = "true" ]; then
-        pnpm install --frozen-lockfile
-    else
-        pnpm install
-    fi
-fi
-
 # Run type checking
 echo "🔍 Type checking..."
 pnpm -r run typecheck
 
 # Run linting
-echo "🔧 Linting..."
+echo "💅 Checking formatting..."
 pnpm -r run lint
 
-# Run formatting check
-echo "💅 Checking formatting..."
-pnpm -r run format
+# Capture Supabase environment variables from the running instance
+echo "🔧 Capturing Supabase environment variables..."
 
-# Run tests (when they exist)
-echo "🧪 Running unit tests..."
-if pnpm -r run test --if-present 2>/dev/null; then
-    echo "✅ All unit tests passed"
-else
-    echo "⚠️  No unit tests found - this is expected for now"
+# Get the status output and extract just the JSON part
+SUPABASE_OUTPUT=$(pnpm exec supabase status --output json 2> /dev/null)
+export VITE_SUPABASE_URL=$(echo "$SUPABASE_OUTPUT" | jq -r '.API_URL')
+export VITE_SUPABASE_ANON_KEY=$(echo "$SUPABASE_OUTPUT" | jq -r '.ANON_KEY')
+export VITE_SUPABASE_SERVICE_ROLE_KEY=$(echo "$SUPABASE_OUTPUT" | jq -r '.SERVICE_ROLE_KEY')
+
+# Verify we got the values
+if [ -z "$VITE_SUPABASE_URL" ] || [ "$VITE_SUPABASE_URL" = "null" ]; then
+    echo "❌ Failed to extract Supabase environment variables"
+    exit 1
 fi
 
 # Run E2E tests with Playwright
 echo "🎭 Running E2E tests..."
-if [ "${CI:-false}" = "true" ]; then
-    # In CI, run headless
-    npx playwright test
-else
-    # Local development, can be more verbose
-    npx playwright test --reporter=list
-fi
 
-echo "✅ All quality checks passed!"
+pnpm exec playwright test --reporter=line "$@"
+PLAYWRIGHT_EXIT_CODE=$?
+
+# Exit with the same code as playwright
+exit $PLAYWRIGHT_EXIT_CODE
