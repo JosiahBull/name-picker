@@ -14,6 +14,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Pull supabase containers in background
+        run: |
+          docker pull supabase/postgres:latest &&
+          docker pull supabase/realtime:latest &&
+          docker pull supabase/gotrue:latest &&
+          docker pull supabase/storage-api:latest &
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -29,6 +36,10 @@ jobs:
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
+
+      - name: Start Supabase services
+        run: |
+          pnpm run supabase:start:ci
 
       - name: Run build
         run: ./scripts/build.sh
@@ -56,7 +67,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
