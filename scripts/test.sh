@@ -47,14 +47,31 @@ pnpm run supabase:reset
 
 # Capture Supabase environment variables from the running instance
 echo "🔧 Capturing Supabase environment variables..."
-SUPABASE_STATUS=$(pnpm exec supabase status --output json 2>/dev/null | head -n -2)
 
-# Extract the values using jq or simple grep/sed as fallback
+# Get the status output and extract just the JSON part
+# The JSON starts with { and ends with }, we capture everything between
+SUPABASE_OUTPUT=$(pnpm exec supabase status --output json 2>&1)
+SUPABASE_STATUS=$(echo "$SUPABASE_OUTPUT" | awk '/^{/{p=1} p{print} /^}/{exit}')
+
+# Check if we got valid JSON
+if [ -z "$SUPABASE_STATUS" ]; then
+    echo "❌ Failed to capture Supabase status"
+    exit 1
+fi
+
+# Extract the values using jq
 export VITE_SUPABASE_URL=$(echo "$SUPABASE_STATUS" | jq -r '.API_URL')
 export VITE_SUPABASE_ANON_KEY=$(echo "$SUPABASE_STATUS" | jq -r '.ANON_KEY')
 export VITE_SUPABASE_SERVICE_ROLE_KEY=$(echo "$SUPABASE_STATUS" | jq -r '.SERVICE_ROLE_KEY')
 
+# Verify we got the values
+if [ -z "$VITE_SUPABASE_URL" ] || [ "$VITE_SUPABASE_URL" = "null" ]; then
+    echo "❌ Failed to extract Supabase environment variables"
+    exit 1
+fi
+
 echo "✅ Supabase URL: $VITE_SUPABASE_URL"
+echo "✅ Anon Key: ${VITE_SUPABASE_ANON_KEY:0:20}..."
 
 # Start the dev server in the background
 echo "🚀 Starting dev server..."
