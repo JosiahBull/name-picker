@@ -45,6 +45,17 @@ echo "🗄️ Ensuring database is up to date..."
 pnpm run supabase:start
 pnpm run supabase:reset
 
+# Capture Supabase environment variables from the running instance
+echo "🔧 Capturing Supabase environment variables..."
+SUPABASE_STATUS=$(pnpm exec supabase status --output json 2>/dev/null | head -n -2)
+
+# Extract the values using jq or simple grep/sed as fallback
+export VITE_SUPABASE_URL=$(echo "$SUPABASE_STATUS" | jq -r '.API_URL')
+export VITE_SUPABASE_ANON_KEY=$(echo "$SUPABASE_STATUS" | jq -r '.ANON_KEY')
+export VITE_SUPABASE_SERVICE_ROLE_KEY=$(echo "$SUPABASE_STATUS" | jq -r '.SERVICE_ROLE_KEY')
+
+echo "✅ Supabase URL: $VITE_SUPABASE_URL"
+
 # Start the dev server in the background
 echo "🚀 Starting dev server..."
 pnpm --filter=frontend run dev &
