@@ -45,8 +45,26 @@ echo "🗄️ Ensuring database is up to date..."
 pnpm run supabase:start
 pnpm run supabase:reset
 
+# Start the dev server in the background
+echo "🚀 Starting dev server..."
+pnpm --filter=frontend run dev &
+DEV_SERVER_PID=$!
+
+# Wait for the dev server to be ready
+echo "⏳ Waiting for dev server to be ready..."
+while ! curl -s http://localhost:5173 > /dev/null 2>&1; do
+    sleep 1
+done
+echo "✅ Dev server is ready"
+
 # Run E2E tests with Playwright
 echo "🎭 Running E2E tests..."
 npx playwright test
+PLAYWRIGHT_EXIT_CODE=$?
 
-echo "✅ All quality checks passed!"
+# Clean up: kill the dev server
+echo "🛑 Stopping dev server..."
+kill $DEV_SERVER_PID 2>/dev/null || true
+
+# Exit with the same code as playwright
+exit $PLAYWRIGHT_EXIT_CODE
