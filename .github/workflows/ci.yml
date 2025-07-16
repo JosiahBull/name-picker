@@ -14,6 +14,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Make pnpm home dir
+        run: mkdir -p ~/.pnpm-store && mkdir -p ~/.cache/pnpm
+
       - name: Pull supabase containers in background
         run: |
           docker pull supabase/postgres:latest &&
@@ -25,6 +28,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: 'pnpm'
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
@@ -67,6 +71,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: 'pnpm'
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
