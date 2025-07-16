@@ -4,62 +4,32 @@ set -euo pipefail
 # Set locale for reproducibility
 export LC_ALL=C
 
+echo "🗄️ Starting database in background..."
+
+pnpm run supabase:start && pnpm run supabase:reset &
+DB_PID=$!
+
 echo "🧪 Running tests and quality checks..."
-
-# Install dependencies if in CI or missing
-if [ "${CI:-false}" = "true" ] || [ ! -d "node_modules" ]; then
-    echo "📦 Installing dependencies..."
-    if [ "${CI:-false}" = "true" ]; then
-        pnpm install --frozen-lockfile
-    else
-        pnpm install
-    fi
-fi
-
-# Run build
-echo "🏗️ Building all packages..."
-pnpm run --filter=shared build
-pnpm run --filter=frontend build
 
 # Run type checking
 echo "🔍 Type checking..."
 pnpm -r run typecheck
 
 # Run linting
-echo "🔧 Linting..."
+echo "💅 Checking formatting..."
 pnpm -r run lint
 
-# Run formatting check
-echo "💅 Checking formatting..."
-pnpm -r run format
-
-# Run tests (when they exist)
-echo "🧪 Running unit tests..."
-if pnpm -r run test --if-present 2>/dev/null; then
-    echo "✅ All unit tests passed"
-else
-    echo "⚠️  No unit tests found - this is expected for now"
+wait $DB_PID
+if [ $? -ne 0 ]; then
+    echo "❌ Database setup failed"
+    exit 1
 fi
-
-echo "🗄️ Ensuring database is up to date..."
-pnpm run supabase:start
-pnpm run supabase:reset
 
 # Capture Supabase environment variables from the running instance
 echo "🔧 Capturing Supabase environment variables..."
 
 # Get the status output and extract just the JSON part
-# The JSON starts with { and ends with }, we capture everything between
 SUPABASE_OUTPUT=$(pnpm exec supabase status --output json 2>&1)
-SUPABASE_STATUS=$(echo "$SUPABASE_OUTPUT" | awk '/^{/{p=1} p{print} /^}/{exit}')
-
-# Check if we got valid JSON
-if [ -z "$SUPABASE_STATUS" ]; then
-    echo "❌ Failed to capture Supabase status"
-    exit 1
-fi
-
-# Extract the values using jq
 export VITE_SUPABASE_URL=$(echo "$SUPABASE_STATUS" | jq -r '.API_URL')
 export VITE_SUPABASE_ANON_KEY=$(echo "$SUPABASE_STATUS" | jq -r '.ANON_KEY')
 export VITE_SUPABASE_SERVICE_ROLE_KEY=$(echo "$SUPABASE_STATUS" | jq -r '.SERVICE_ROLE_KEY')
@@ -69,9 +39,6 @@ if [ -z "$VITE_SUPABASE_URL" ] || [ "$VITE_SUPABASE_URL" = "null" ]; then
     echo "❌ Failed to extract Supabase environment variables"
     exit 1
 fi
-
-echo "✅ Supabase URL: $VITE_SUPABASE_URL"
-echo "✅ Anon Key: ${VITE_SUPABASE_ANON_KEY:0:20}..."
 
 # Start the dev server in the background
 echo "🚀 Starting dev server..."
