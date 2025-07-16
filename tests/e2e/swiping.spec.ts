@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../setup/database-setup';
 import { loginAsJoe, loginAsSam } from '../helpers/auth-helpers';
 
 test.describe('Swiping Functionality', () => {
@@ -75,13 +75,16 @@ test.describe('Swiping Functionality', () => {
     expect(hasNextName || isComplete).toBe(true);
   });
 
-  test('should show completion message when no more names', async ({ page }) => {
+  test('should show completion message when no more names', async ({ page, databaseHelper }) => {
+    // Seed just a few unique names to make the test predictable
+    await databaseHelper.seedUniqueTestNames(2);
+    
     await loginAsJoe(page);
     await page.click('button:has-text("Start Swiping")');
     
-    // Swipe through all available names (limit to prevent infinite loop)
+    // Swipe through all available names (should be exactly 2 with our seeded data)
     let swipeCount = 0;
-    const maxSwipes = 50;
+    const maxSwipes = 5; // Reduced since we control the data
     
     while (swipeCount < maxSwipes) {
       try {

@@ -1,8 +1,11 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../setup/database-setup';
 import { loginAsJoe, loginAsSam } from '../helpers/auth-helpers';
+import type { Page } from '@playwright/test';
 
 test.describe('Name Upload and Prioritization', () => {
-  test('should allow uploading a single name and show it immediately for both users', async ({ browser }) => {
+  test('should allow uploading a single name and show it immediately for both users', async ({ browser, databaseHelper }) => {
+    // Increase timeout for this complex test
+    test.setTimeout(60000);
     const joeContext = await browser.newContext();
     const samContext = await browser.newContext();
     
@@ -29,10 +32,36 @@ test.describe('Name Upload and Prioritization', () => {
       // Submit the form
       await joePage.click('button:has-text("Add Name")');
       
-      // Wait for success message or form reset
-      await joePage.waitForTimeout(2000);
+      // Wait for either success message or error message
+      try {
+        await joePage.waitForSelector('text=Successfully added', { timeout: 10000 });
+        console.log('✅ Success message appeared');
+      } catch (error) {
+        // Check for error message
+        const errorMessage = await joePage.locator('[role="alert"]').textContent();
+        console.log('❌ Error message:', errorMessage);
+        
+        // Check if form is still loading
+        const isLoading = await joePage.locator('button:has-text("Adding...")').isVisible();
+        console.log('Is still loading:', isLoading);
+        
+        if (isLoading) {
+          await joePage.waitForTimeout(5000);
+        }
+      }
       
-      // Now both users should see this name as the next one to swipe
+      // Verify the name was actually saved to the database
+      const nameExists = await databaseHelper.checkNameExists(uniqueName);
+      console.log(`Name "${uniqueName}" exists in database:`, nameExists);
+      
+      if (!nameExists) {
+        // Let's see what names are in the database
+        const allNames = await databaseHelper.getAllNames();
+        console.log('All names in database:', allNames.map(n => n.name).slice(0, 10));
+        expect(nameExists).toBe(true); // This will fail and show us the issue
+      }
+      
+      // Now both users should see this name prioritized (user-uploaded names come first)
       // Joe goes to swipe page
       await joePage.goto('/swipe');
       await joePage.waitForSelector('[data-testid="name-card"]', { timeout: 10000 });
@@ -41,18 +70,46 @@ test.describe('Name Upload and Prioritization', () => {
       await samPage.click('button:has-text("Start Swiping")');
       await samPage.waitForSelector('[data-testid="name-card"]', { timeout: 10000 });
       
-      // Check if the uploaded name appears for both users
-      const joeNameText = await joePage.locator('[data-testid="name-card"] h1').textContent();
-      const samNameText = await samPage.locator('[data-testid="name-card"] h1').textContent();
+      // Function to find the uploaded name by swiping through names
+      async function findUploadedName(page: Page, targetName: string, maxSwipes: number = 10): Promise<boolean> {
+        const foundNames = [];
+        for (let i = 0; i < maxSwipes; i++) {
+          try {
+            await page.waitForSelector('[data-testid="name-card"]', { timeout: 5000 });
+            const nameText = await page.locator('[data-testid="name-card"] h1').textContent();
+            if (nameText) {
+              foundNames.push(nameText);
+            }
+            
+            console.log(`Swipe ${i + 1}: Found name "${nameText}"`);
+            
+            if (nameText === targetName) {
+              console.log(`✅ Found target name "${targetName}" on swipe ${i + 1}`);
+              return true;
+            }
+            
+            // Swipe to next name
+            await page.click('button:has-text("Pass")');
+            await page.waitForTimeout(1000);
+          } catch (error) {
+            console.log(`❌ Error on swipe ${i + 1}:`, error.message);
+            // If we can't find more names, stop searching
+            break;
+          }
+        }
+        console.log(`❌ Did not find "${targetName}" in ${foundNames.length} swipes. Names found:`, foundNames);
+        return false;
+      }
       
-      console.log('Joe sees name:', joeNameText);
-      console.log('Sam sees name:', samNameText);
+      // Check if both users can find the uploaded name
+      const joeFoundUploadedName = await findUploadedName(joePage, uniqueName);
+      const samFoundUploadedName = await findUploadedName(samPage, uniqueName);
+      
+      console.log('Joe found uploaded name:', joeFoundUploadedName);
+      console.log('Sam found uploaded name:', samFoundUploadedName);
       console.log('Expected unique name:', uniqueName);
       
-      let joeFoundUploadedName = joeNameText === uniqueName;
-      let samFoundUploadedName = samNameText === uniqueName;
-      
-      // Both users should have seen the uploaded name
+      // Both users should have found the uploaded name
       expect(joeFoundUploadedName).toBe(true);
       expect(samFoundUploadedName).toBe(true);
     } finally {

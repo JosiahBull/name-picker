@@ -29,10 +29,10 @@ fi
 echo "🔧 Capturing Supabase environment variables..."
 
 # Get the status output and extract just the JSON part
-SUPABASE_OUTPUT=$(pnpm exec supabase status --output json 2>&1)
-export VITE_SUPABASE_URL=$(echo "$SUPABASE_STATUS" | jq -r '.API_URL')
-export VITE_SUPABASE_ANON_KEY=$(echo "$SUPABASE_STATUS" | jq -r '.ANON_KEY')
-export VITE_SUPABASE_SERVICE_ROLE_KEY=$(echo "$SUPABASE_STATUS" | jq -r '.SERVICE_ROLE_KEY')
+SUPABASE_OUTPUT=$(pnpm exec supabase status --output json 2> /dev/null)
+export VITE_SUPABASE_URL=$(echo "$SUPABASE_OUTPUT" | jq -r '.API_URL')
+export VITE_SUPABASE_ANON_KEY=$(echo "$SUPABASE_OUTPUT" | jq -r '.ANON_KEY')
+export VITE_SUPABASE_SERVICE_ROLE_KEY=$(echo "$SUPABASE_OUTPUT" | jq -r '.SERVICE_ROLE_KEY')
 
 # Verify we got the values
 if [ -z "$VITE_SUPABASE_URL" ] || [ "$VITE_SUPABASE_URL" = "null" ]; then
@@ -42,19 +42,37 @@ fi
 
 # Start the dev server in the background
 echo "🚀 Starting dev server..."
-pnpm --filter=frontend run dev &
+pnpm --filter=frontend run dev > /tmp/vite-output.log 2>&1 &
 DEV_SERVER_PID=$!
 
-# Wait for the dev server to be ready
+# Wait for the dev server to be ready and detect the port
 echo "⏳ Waiting for dev server to be ready..."
-while ! curl -s http://localhost:5173 > /dev/null 2>&1; do
+DEV_SERVER_URL=""
+for i in {1..30}; do
+    if [ -f /tmp/vite-output.log ]; then
+        # Extract the URL from vite output
+        URL=$(grep -o "http://localhost:[0-9]*" /tmp/vite-output.log | head -1)
+        if [ -n "$URL" ]; then
+            DEV_SERVER_URL=$URL
+            break
+        fi
+    fi
     sleep 1
 done
-echo "✅ Dev server is ready"
+
+if [ -z "$DEV_SERVER_URL" ]; then
+    echo "❌ Failed to detect dev server URL"
+    exit 1
+fi
+
+echo "✅ Dev server is ready at $DEV_SERVER_URL"
+
+# Update Playwright config with the correct base URL
+export PLAYWRIGHT_BASE_URL=$DEV_SERVER_URL
 
 # Run E2E tests with Playwright
 echo "🎭 Running E2E tests..."
-npx playwright test
+pnpm exec playwright test --reporter=line
 PLAYWRIGHT_EXIT_CODE=$?
 
 # Clean up: kill the dev server
