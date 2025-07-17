@@ -13,7 +13,7 @@
     "typecheck": "pnpm -r run typecheck",
     "clean": "pnpm -r run clean && rimraf node_modules",
     "supabase:start": "pnpm dlx supabase@latest start",
-    "supabase:start:ci": "pnpm dlx supabase@latest start --exclude realtime,storage-api,imgproxy,inbucket,studio,edge-runtime",
+    "supabase:start:ci": "pnpm dlx supabase@latest start --exclude realtime,storage-api,imgproxy,studio,edge-runtime",
     "supabase:stop": "pnpm dlx supabase@latest stop",
     "supabase:status": "pnpm dlx supabase@latest status",
     "supabase:reset": "pnpm dlx supabase@latest db reset",
