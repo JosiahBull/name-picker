@@ -6,7 +6,6 @@
   "type": "module",
   "scripts": {
     "setup": "./scripts/setup.sh",
-    "dev": "./scripts/dev.sh",
     "build": "./scripts/build.sh",
     "test": "./scripts/test.sh",
     "lint": "pnpm -r run lint",
@@ -14,6 +13,7 @@
     "typecheck": "pnpm -r run typecheck",
     "clean": "pnpm -r run clean && rimraf node_modules",
     "supabase:start": "pnpm dlx supabase@latest start",
+    "supabase:start:ci": "pnpm dlx supabase@latest start --exclude realtime,storage-api,imgproxy,studio,edge-runtime",
     "supabase:stop": "pnpm dlx supabase@latest stop",
     "supabase:status": "pnpm dlx supabase@latest status",
     "supabase:reset": "pnpm dlx supabase@latest db reset",
@@ -27,6 +27,8 @@
   "devDependencies": {
     "@eslint/js": "^9.31.0",
     "@playwright/test": "^1.54.1",
+    "@supabase/supabase-js": "^2.51.0",
+    "@types/node": "^24.0.13",
     "@typescript-eslint/eslint-plugin": "^8.37.0",
     "@typescript-eslint/parser": "^8.37.0",
     "eslint": "^9.31.0",

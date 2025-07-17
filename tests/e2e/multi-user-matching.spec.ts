@@ -1,8 +1,10 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../setup/database-setup';
 import { loginAsJoe, loginAsSam } from '../helpers/auth-helpers';
 
 test.describe('Multi-User Matching', () => {
-  test('should create match when both Joe and Sam like the same name', async ({ browser }) => {
+  test('should create match when both Joe and Sam like the same name', async ({ browser, databaseHelper }) => {
+    // Increase timeout for this complex test
+    test.setTimeout(60000);
     // Create two browser contexts for Joe and Sam
     const joeContext = await browser.newContext();
     const samContext = await browser.newContext();

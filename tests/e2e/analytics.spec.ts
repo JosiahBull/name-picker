@@ -1,8 +1,8 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../setup/database-setup';
 import { loginAsJoe } from '../helpers/auth-helpers';
 
 test.describe('Analytics', () => {
-  test('should update analytics correctly as user swipes', async ({ page }) => {
+  test('should update analytics correctly as user swipes', async ({ page, databaseHelper }) => {
     await loginAsJoe(page);
     
     // Navigate to analytics to check initial state

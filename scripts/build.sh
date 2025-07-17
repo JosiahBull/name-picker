@@ -18,6 +18,6 @@ fi
 
 # Build frontend
 echo "🌐 Building frontend..."
-pnpm --filter=frontend build
+pnpm --filter=frontend... build
 
 echo "✅ All packages built successfully!"

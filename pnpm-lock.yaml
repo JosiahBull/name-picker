@@ -14,6 +14,12 @@ importers:
       '@playwright/test':
         specifier: ^1.54.1
         version: 1.54.1
+      '@supabase/supabase-js':
+        specifier: ^2.51.0
+        version: 2.51.0
+      '@types/node':
+        specifier: ^24.0.13
+        version: 24.0.13
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.37.0
         version: 8.37.0(@typescript-eslint/parser@8.37.0(eslint@9.31.0)(typescript@5.8.3))(eslint@9.31.0)(typescript@5.8.3)
