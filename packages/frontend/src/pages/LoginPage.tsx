@@ -1,15 +1,40 @@
-import { Box, Typography, Button, Container, Paper, Avatar } from '@mui/material';
-import { Person, Favorite } from '@mui/icons-material';
-import { useUser, UserId } from '../context/UserContext';
+import { useState } from 'react';
+import {
+	Box,
+	Typography,
+	Button,
+	Container,
+	Paper,
+	Avatar,
+	TextField,
+	Alert,
+	CircularProgress,
+} from '@mui/material';
+import { Favorite } from '@mui/icons-material';
+import { useUser } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
 
 export default function LoginPage() {
-	const { login, users } = useUser();
+	const { login } = useUser();
 	const navigate = useNavigate();
+	const [email, setEmail] = useState('');
+	const [password, setPassword] = useState('');
+	const [error, setError] = useState('');
+	const [isLoading, setIsLoading] = useState(false);
 
-	const handleLogin = (userId: UserId) => {
-		login(userId);
-		navigate('/');
+	const handleLogin = async (e: React.FormEvent) => {
+		e.preventDefault();
+		setError('');
+		setIsLoading(true);
+
+		try {
+			await login(email, password);
+			navigate('/');
+		} catch (err) {
+			setError(err instanceof Error ? err.message : 'Failed to login');
+		} finally {
+			setIsLoading(false);
+		}
 	};
 
 	return (
@@ -51,46 +76,71 @@ export default function LoginPage() {
 						<Typography variant="h6" color="text.secondary" gutterBottom>
 							Choose Your Perfect Last Name Together
 						</Typography>
-						<Typography variant="body1" color="text.secondary">
-							Select your profile to start swiping through name options
-						</Typography>
 					</Box>
 
-					<Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-						<Typography variant="h5" sx={{ mb: 2, fontWeight: 500 }}>
-							Who are you?
-						</Typography>
+					<Box component="form" onSubmit={handleLogin} sx={{ mt: 1 }}>
+						<TextField
+							margin="normal"
+							required
+							fullWidth
+							id="email"
+							label="Email Address"
+							name="email"
+							autoComplete="email"
+							autoFocus
+							value={email}
+							onChange={(e) => setEmail(e.target.value)}
+							disabled={isLoading}
+						/>
+						<TextField
+							margin="normal"
+							required
+							fullWidth
+							name="password"
+							label="Password"
+							type="password"
+							id="password"
+							autoComplete="current-password"
+							value={password}
+							onChange={(e) => setPassword(e.target.value)}
+							disabled={isLoading}
+						/>
 
-						{Object.entries(users).map(([userId, user]) => (
-							<Button
-								key={user.id}
-								variant="contained"
-								size="large"
-								startIcon={<Person />}
-								onClick={() => handleLogin(userId as UserId)}
-								sx={{
-									py: 2,
-									fontSize: '1.1rem',
-									textTransform: 'none',
-									background: `linear-gradient(45deg, ${
-										userId === 'joe' ? '#2196f3 30%, #21cbf3 90%' : '#f44336 30%, #ff9800 90%'
-									})`,
-									'&:hover': {
-										background: `linear-gradient(45deg, ${
-											userId === 'joe' ? '#1976d2 30%, #0097a7 90%' : '#d32f2f 30%, #f57c00 90%'
-										})`,
-									},
-								}}
-							>
-								{user.displayName}
-							</Button>
-						))}
-					</Box>
+						{error && (
+							<Alert severity="error" sx={{ mt: 2 }}>
+								{error}
+							</Alert>
+						)}
 
-					<Box sx={{ mt: 4, p: 2, bgcolor: 'background.default', borderRadius: 2 }}>
-						<Typography variant="body2" color="text.secondary">
-							💡 Your selection will be saved and remembered for future visits
-						</Typography>
+						<Button
+							type="submit"
+							fullWidth
+							variant="contained"
+							sx={{
+								mt: 3,
+								mb: 2,
+								py: 1.5,
+								fontSize: '1.1rem',
+								textTransform: 'none',
+								background: 'linear-gradient(45deg, #2196f3 30%, #21cbf3 90%)',
+								'&:hover': {
+									background: 'linear-gradient(45deg, #1976d2 30%, #0097a7 90%)',
+								},
+							}}
+							disabled={isLoading}
+						>
+							{isLoading ? <CircularProgress size={24} color="inherit" /> : 'Sign In'}
+						</Button>
+
+						<Box sx={{ mt: 2, p: 2, bgcolor: 'background.default', borderRadius: 2 }}>
+							<Typography variant="body2" color="text.secondary">
+								💡 For Sam: use sam@example.com
+								<br />
+								💡 For Joe: use joe@example.com
+								<br />
+								Password: password123
+							</Typography>
+						</Box>
 					</Box>
 				</Paper>
 			</Container>

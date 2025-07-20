@@ -16,8 +16,8 @@ function App() {
 	return (
 		<ThemeProvider theme={theme}>
 			<CssBaseline />
-			<UserProvider>
-				<ApiProvider>
+			<ApiProvider>
+				<UserProvider>
 					<Router>
 						<Routes>
 							<Route path="/login" element={<LoginPage />} />
@@ -64,8 +64,8 @@ function App() {
 							<Route path="*" element={<Navigate to="/" replace />} />
 						</Routes>
 					</Router>
-				</ApiProvider>
-			</UserProvider>
+				</UserProvider>
+			</ApiProvider>
 		</ThemeProvider>
 	);
 }

@@ -1,4 +1,6 @@
 import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
+import { useApi } from './ApiContext';
+import { SupabaseApiClient } from '@name-picker/shared';
 
 export type UserId = 'joe' | 'sam';
 
@@ -6,33 +8,18 @@ interface UserInfo {
 	id: string; // UUID from database
 	name: string;
 	displayName: string;
+	email: string;
 }
-
-const USERS: Record<UserId, UserInfo> = {
-	joe: {
-		id: '550e8400-e29b-41d4-a716-446655440001', // UUID from seed data
-		name: 'joe',
-		displayName: 'Joe',
-	},
-	sam: {
-		id: '550e8400-e29b-41d4-a716-446655440002', // UUID from seed data
-		name: 'sam',
-		displayName: 'Sam',
-	},
-};
 
 interface UserContextType {
 	currentUser: UserInfo | null;
-	users: Record<UserId, UserInfo>;
-	login: (userId: UserId) => void;
-	logout: () => void;
+	login: (email: string, password: string) => Promise<void>;
+	logout: () => Promise<void>;
 	isAuthenticated: boolean;
 	isLoading: boolean;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
-
-const USER_STORAGE_KEY = 'name-picker-user';
 
 interface UserProviderProps {
 	children: ReactNode;
@@ -41,32 +28,74 @@ interface UserProviderProps {
 export function UserProvider({ children }: UserProviderProps) {
 	const [currentUser, setCurrentUser] = useState<UserInfo | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
+	const { api } = useApi();
 
-	// Load user from localStorage on mount
+	// Check for existing session on mount
 	useEffect(() => {
-		const savedUserId = localStorage.getItem(USER_STORAGE_KEY) as UserId | null;
-		if (savedUserId && USERS[savedUserId]) {
-			setCurrentUser(USERS[savedUserId]);
-		}
-		setIsLoading(false);
-	}, []);
+		const checkSession = async () => {
+			try {
+				const supabaseApi = api as SupabaseApiClient;
+				const user = await supabaseApi.getCurrentUser();
+				
+				if (user && user.email) {
+					// Fetch user profile
+					const profile = await api.getUserProfile(user.id);
+					
+					setCurrentUser({
+						id: user.id,
+						name: profile.name.toLowerCase() as UserId,
+						displayName: profile.name,
+						email: user.email,
+					});
+				}
+			} catch (error) {
+				console.error('Error checking session:', error);
+			} finally {
+				setIsLoading(false);
+			}
+		};
 
-	const login = (userId: UserId) => {
-		const user = USERS[userId];
-		if (user) {
-			setCurrentUser(user);
-			localStorage.setItem(USER_STORAGE_KEY, userId);
+		checkSession();
+	}, [api]);
+
+	const login = async (email: string, password: string) => {
+		try {
+			const supabaseApi = api as SupabaseApiClient;
+			const { user } = await supabaseApi.signInWithEmail(email, password);
+			
+			if (!user || !user.email) {
+				throw new Error('Invalid credentials');
+			}
+
+			// Fetch user profile
+			const profile = await api.getUserProfile(user.id);
+			
+			setCurrentUser({
+				id: user.id,
+				name: profile.name.toLowerCase() as UserId,
+				displayName: profile.name,
+				email: user.email,
+			});
+		} catch (error) {
+			console.error('Login error:', error);
+			throw error;
 		}
 	};
 
-	const logout = () => {
-		setCurrentUser(null);
-		localStorage.removeItem(USER_STORAGE_KEY);
+	const logout = async () => {
+		try {
+			const supabaseApi = api as SupabaseApiClient;
+			// Implement logout in the API client
+			await supabaseApi.signOut();
+			setCurrentUser(null);
+		} catch (error) {
+			console.error('Logout error:', error);
+			throw error;
+		}
 	};
 
 	const value: UserContextType = {
 		currentUser,
-		users: USERS,
 		login,
 		logout,
 		isAuthenticated: currentUser !== null,

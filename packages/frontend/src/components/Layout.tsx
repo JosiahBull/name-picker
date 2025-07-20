@@ -14,9 +14,13 @@ export default function Layout({ children, title, showBackButton = false }: Layo
 	const navigate = useNavigate();
 	const { currentUser, logout } = useUser();
 
-	const handleLogout = () => {
-		logout();
-		navigate('/login');
+	const handleLogout = async () => {
+		try {
+			await logout();
+			navigate('/login');
+		} catch (error) {
+			console.error('Logout error:', error);
+		}
 	};
 
 	return (

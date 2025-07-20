@@ -234,7 +234,7 @@ export class SupabaseApiClient implements ApiClient {
 			throw error;
 		}
 
-		return data;
+		return { user: data.user };
 	}
 
 	// Helper method to get current user
@@ -243,6 +243,14 @@ export class SupabaseApiClient implements ApiClient {
 			data: { user },
 		} = await this.supabase.auth.getUser();
 		return user;
+	}
+
+	// Helper method to sign out
+	async signOut() {
+		const { error } = await this.supabase.auth.signOut();
+		if (error) {
+			throw error;
+		}
 	}
 
 	async addName(

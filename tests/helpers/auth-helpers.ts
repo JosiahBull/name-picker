@@ -2,14 +2,18 @@ import { Page, expect } from '@playwright/test';
 
 export async function loginAsJoe(page: Page) {
   await page.goto('/login');
-  await page.click('button:has-text("Joe")');
+  await page.fill('input[name="email"]', 'joe@example.com');
+  await page.fill('input[name="password"]', 'password123');
+  await page.click('button[type="submit"]');
   await expect(page).toHaveURL('/');
   await expect(page.locator('h3')).toContainText('Welcome, Joe!');
 }
 
 export async function loginAsSam(page: Page) {
   await page.goto('/login');
-  await page.click('button:has-text("Sam")');
+  await page.fill('input[name="email"]', 'sam@example.com');
+  await page.fill('input[name="password"]', 'password123');
+  await page.click('button[type="submit"]');
   await expect(page).toHaveURL('/');
   await expect(page.locator('h3')).toContainText('Welcome, Sam!');
 }

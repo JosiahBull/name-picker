@@ -49,19 +49,38 @@ test.describe('Analytics', () => {
     
     // Wait for name card to load
     await page.waitForSelector('[data-testid="name-card"]', { timeout: 10000 });
-    await page.click('button:has-text("Like")');
-    await page.waitForTimeout(500); // Wait for API call
     
-    // Validate analytics after one like
-    const afterLikeDbAnalytics = await databaseHelper.getUserAnalytics(joeId);
+    // Perform like action
+    await page.click('button:has-text("Like")');
+    
+    // Wait for next card to appear (indicates swipe was processed)
+    await page.waitForTimeout(1000);
+    
+    // Poll for analytics update after like with retry logic
+    let afterLikeDbAnalytics;
+    for (let i = 0; i < 5; i++) {
+      afterLikeDbAnalytics = await databaseHelper.getUserAnalytics(joeId);
+      if (afterLikeDbAnalytics.totalSwipes === 1) break;
+      await page.waitForTimeout(500);
+    }
     expect(afterLikeDbAnalytics).toEqual(EXPECTED_AFTER_ONE_LIKE);
+    
+    // Wait for new card to be ready
+    await page.waitForSelector('[data-testid="name-card"]', { timeout: 10000 });
     
     // Perform a pass action on the next card
     await page.click('button:has-text("Pass")');
-    await page.waitForTimeout(500); // Wait for API call
     
-    // Validate analytics after one like and one pass
-    const afterPassDbAnalytics = await databaseHelper.getUserAnalytics(joeId);
+    // Wait for next card or completion message
+    await page.waitForTimeout(1000);
+    
+    // Poll for analytics update after pass with retry logic
+    let afterPassDbAnalytics;
+    for (let i = 0; i < 5; i++) {
+      afterPassDbAnalytics = await databaseHelper.getUserAnalytics(joeId);
+      if (afterPassDbAnalytics.totalSwipes === 2) break;
+      await page.waitForTimeout(500);
+    }
     expect(afterPassDbAnalytics).toEqual(EXPECTED_AFTER_ONE_LIKE_ONE_PASS);
 
     // Navigate to analytics page
