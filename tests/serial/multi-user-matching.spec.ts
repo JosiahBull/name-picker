@@ -1,19 +1,12 @@
-import { test, expect } from '@playwright/test';
-import { loginAsJoe, loginAsSam } from '../helpers/auth-helpers';
+import { test, expect } from '../setup/database-setup';
 
 test.describe('Multi-User Matching', () => {
-  test('should create match when both Joe and Sam like the same name', async ({ browser }) => {
-    // Create two browser contexts for Joe and Sam
-    const joeContext = await browser.newContext();
-    const samContext = await browser.newContext();
+  test('should create match when both Joe and Sam like the same name', async ({ joeContext, samContext, databaseHelper }) => {
+    // Increase timeout for this complex test
+    test.setTimeout(60000);
     
-    const joePage = await joeContext.newPage();
-    const samPage = await samContext.newPage();
-    
-    try {
-      // Login both users
-      await loginAsJoe(joePage);
-      await loginAsSam(samPage);
+    const joePage = joeContext.page;
+    const samPage = samContext.page;
       
       // Both users navigate to swipe page
       await joePage.click('button:has-text("Start Swiping")');
@@ -74,24 +67,11 @@ test.describe('Multi-User Matching', () => {
         await expect(joePage.locator('header [class*="MuiTypography-h6"]')).toContainText('Your Matches');
         await expect(samPage.locator('header [class*="MuiTypography-h6"]')).toContainText('Your Matches');
       }
-      
-    } finally {
-      await joeContext.close();
-      await samContext.close();
-    }
   });
 
-  test('should not create match when users disagree on a name', async ({ browser }) => {
-    const joeContext = await browser.newContext();
-    const samContext = await browser.newContext();
-    
-    const joePage = await joeContext.newPage();
-    const samPage = await samContext.newPage();
-    
-    try {
-      // Login both users
-      await loginAsJoe(joePage);
-      await loginAsSam(samPage);
+  test('should not create match when users disagree on a name', async ({ joeContext, samContext }) => {
+    const joePage = joeContext.page;
+    const samPage = samContext.page;
       
       // Navigate to swipe pages
       await joePage.click('button:has-text("Start Swiping")');
@@ -115,10 +95,5 @@ test.describe('Multi-User Matching', () => {
       // At minimum, pages should load correctly
       await expect(joePage.locator('header [class*="MuiTypography-h6"]')).toContainText('Your Matches');
       await expect(samPage.locator('header [class*="MuiTypography-h6"]')).toContainText('Your Matches');
-      
-    } finally {
-      await joeContext.close();
-      await samContext.close();
-    }
   });
 });

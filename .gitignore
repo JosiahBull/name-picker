@@ -19,5 +19,11 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Tests
+playwright-report
+coverage*
+test-results/
+
 # AI
 CLAUDE*
+./.claude

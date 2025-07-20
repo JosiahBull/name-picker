@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
@@ -14,19 +14,42 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
+      - uses: pnpm/action-setup@v2
         with:
           version: 10
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Pull supabase containers in background
+        run: |
+          pnpm run supabase:start:ci &
+
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
+
+      - name: Run build
+        run: ./scripts/build.sh
+
+      - name: Wait for Supabase to be ready
+        run: |
+          timeout=180
+          counter=0
+          until curl -s http://localhost:54321/rest/v1/ >/dev/null; do
+            if [ $counter -gt $timeout ]; then
+              echo "Timed out waiting for Supabase"
+              exit 1
+            fi
+            echo "Waiting for Supabase to be ready..."
+            sleep 1
+            counter=$((counter + 1))
+          done
+          echo "Supabase is ready!"
 
       - name: Run tests
         run: ./scripts/test.sh
@@ -47,22 +70,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
+      - uses: pnpm/action-setup@v2
         with:
           version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --prod
 
       - name: Build packages
         run: ./scripts/build.sh
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
           path: |

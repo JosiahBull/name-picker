@@ -6,7 +6,6 @@
   "type": "module",
   "scripts": {
     "setup": "./scripts/setup.sh",
-    "dev": "./scripts/dev.sh",
     "build": "./scripts/build.sh",
     "test": "./scripts/test.sh",
     "lint": "pnpm -r run lint",
@@ -14,30 +13,28 @@
     "typecheck": "pnpm -r run typecheck",
     "clean": "pnpm -r run clean && rimraf node_modules",
     "supabase:start": "pnpm dlx supabase@latest start",
-    "supabase:stop": "pnpm dlx supabase@latest stop",
+    "supabase:start:ci": "pnpm dlx supabase@latest start --exclude realtime,storage-api,imgproxy,studio,edge-runtime",
+    "supabase:stop": "pnpm dlx supabase@latest stop --no-backup",
     "supabase:status": "pnpm dlx supabase@latest status",
     "supabase:reset": "pnpm dlx supabase@latest db reset",
-    "supabase:link": "pnpm dlx supabase@latest link",
-    "supabase:push": "pnpm dlx supabase@latest db push",
-    "gen-types": "pnpm dlx supabase@latest gen types typescript --local > packages/shared/src/database.types.ts",
-    "syncpack:check": "syncpack list-mismatches",
-    "syncpack:fix": "syncpack fix-mismatches",
-    "update:latest": "pnpm update --latest"
+    "gen-types": "pnpm dlx supabase@latest gen types typescript --local > packages/shared/src/database.types.ts"
   },
   "devDependencies": {
     "@eslint/js": "^9.31.0",
     "@playwright/test": "^1.54.1",
+    "@supabase/supabase-js": "^2.52.0",
+    "@types/node": "^24.0.15",
     "@typescript-eslint/eslint-plugin": "^8.37.0",
     "@typescript-eslint/parser": "^8.37.0",
     "eslint": "^9.31.0",
-    "eslint-config-prettier": "^10.1.5",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "prettier": "^3.6.2",
     "rimraf": "^6.0.1",
-    "supabase": "^2.30.4",
-    "syncpack": "^13.0.4",
-    "typescript": "^5.8.3"
+    "supabase": "^2.31.4",
+    "typescript": "^5.8.3",
+    "wrangler": "^4.25.0"
   },
   "engines": {
     "node": ">=22.0.0",
