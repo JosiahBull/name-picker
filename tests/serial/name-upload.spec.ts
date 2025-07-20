@@ -1,4 +1,3 @@
-import { assert } from 'console';
 import { test, expect } from '../setup/database-setup';
 
 test.describe('Name Upload and Prioritization', () => {
@@ -29,10 +28,11 @@ test.describe('Name Upload and Prioritization', () => {
     console.log('✅ Success message appeared');
 
     // Verify the name was actually saved to the database
-
     const allNames = await databaseHelper.getAllNames();
     console.log('All names in database:', allNames.map(n => n.name).slice(0, 10));
-    assert(allNames.some(n => n.name === uniqueName), `Name "${uniqueName}" was not found in the database`);
+    const nameExists = await databaseHelper.checkNameExists(uniqueName);
+    expect(nameExists).toBe(true);
+
 
     // Add a small delay to ensure the database is fully updated
     await joePage.waitForTimeout(2000);

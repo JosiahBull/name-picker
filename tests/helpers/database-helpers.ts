@@ -9,9 +9,6 @@ export class DatabaseHelper {
 		const serviceRoleKey = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
 
 		if (!supabaseUrl || !serviceRoleKey) {
-			console.error('Environment variables available:', Object.keys(process.env).filter(key => key.includes('SUPABASE')));
-			console.error('VITE_SUPABASE_URL:', supabaseUrl);
-			console.error('VITE_SUPABASE_SERVICE_ROLE_KEY:', serviceRoleKey ? '[REDACTED]' : 'undefined');
 			throw new Error('Missing Supabase environment variables for database helper');
 		}
 
