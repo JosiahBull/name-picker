@@ -17,9 +17,9 @@ jobs:
     runs-on: ubuntu-latest
     
     permissions:
-      contents: read
-      id-token: write  # Required for OIDC authentication if using it
-    
+      contents: write
+      id-token: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -36,9 +36,6 @@ jobs:
         with:
           node-version: '22'
           cache: 'pnpm'
-      
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
       
       - name: Validate release tag
         run: |
@@ -89,17 +86,16 @@ jobs:
       
       - name: Build project
         run: |
-          pnpm run typecheck
-          pnpm run build
-      
+          ./scripts/build.sh
+          echo "Build completed successfully!"
+
       - name: Create release artifacts
         run: |
           # Create artifacts directory
           mkdir -p release-artifacts
           
-          # Copy VERSION file
           cp VERSION release-artifacts/
-          
+
           # Create frontend build archive
           if [[ -d "packages/frontend/dist" ]]; then
             echo "Creating frontend build archive..."
@@ -179,6 +175,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_PROJECT_NAME: ${{ secrets.CLOUDFLARE_PROJECT_NAME }}
+          CLOUDFLARE_HOOK_ID: ${{ secrets.CLOUDFLARE_HOOK_ID }}
           
           # GitHub context
           GITHUB_REF_NAME: ${{ github.ref_name }}

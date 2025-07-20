@@ -67,8 +67,6 @@ check_prerequisites() {
     
     # Check for required tools
     command_exists "pnpm" || missing_tools+=("pnpm")
-    command_exists "supabase" || missing_tools+=("supabase (install with: pnpm add -D supabase)")
-    command_exists "wrangler" || missing_tools+=("wrangler (install with: pnpm add -D wrangler)")
     command_exists "git" || missing_tools+=("git")
     command_exists "docker" || missing_tools+=("docker")
     
@@ -91,14 +89,7 @@ check_prerequisites() {
 
 # Function to get the current version/tag
 get_version() {
-    if [[ -n "${GITHUB_REF_NAME:-}" ]]; then
-        # Running in GitHub Actions
-        echo "$GITHUB_REF_NAME"
-    else
-        # Running locally - get the latest tag or current commit
-        local version=$(git describe --tags --always 2>/dev/null || git rev-parse --short HEAD)
-        echo "$version"
-    fi
+    echo "$GITHUB_REF_NAME"
 }
 
 # Function to build the project
@@ -162,65 +153,11 @@ deploy_cloudflare() {
         exit 1
     fi
     
-    # Deploy to Cloudflare Pages
-    print_info "Uploading to Cloudflare Pages (version: $version)..."
-    
-    export CLOUDFLARE_API_TOKEN
-    export CLOUDFLARE_ACCOUNT_ID
-    
-    pnpm exec wrangler pages deploy "$dist_dir" \
-        --project-name="$CLOUDFLARE_PROJECT_NAME" \
-        --commit-hash="$(git rev-parse HEAD)" \
-        --commit-message="Release $version" \
-        --branch="${GITHUB_REF_NAME:-main}"
-    
-    print_success "Cloudflare Pages deployment completed."
-}
+    # Trigger Cloudflare Pages deployment
+    print_info "Triggering Cloudflare Pages deployment..."
+    curl -sS --fail-with-body -o /dev/null -d "" "https://api.cloudflare.com/client/v4/pages/webhooks/deploy_hooks/$CLOUDFLARE_HOOK_ID"
 
-# Function to create a release tag (for local use)
-create_release_tag() {
-    if [[ -n "${CI:-}" ]]; then
-        print_info "Running in CI, skipping tag creation."
-        return
-    fi
-    
-    print_info "Creating a new release tag..."
-    
-    # Get the latest tag
-    local latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
-    
-    # Parse version components
-    local version_regex="^v([0-9]+)\.([0-9]+)\.([0-9]+)"
-    if [[ $latest_tag =~ $version_regex ]]; then
-        local major="${BASH_REMATCH[1]}"
-        local minor="${BASH_REMATCH[2]}"
-        local patch="${BASH_REMATCH[3]}"
-        
-        # Increment patch version by default
-        patch=$((patch + 1))
-        local new_tag="v${major}.${minor}.${patch}"
-        
-        read -p "Enter new version tag (default: $new_tag): " user_tag
-        new_tag="${user_tag:-$new_tag}"
-        
-        # Validate tag format
-        if [[ ! $new_tag =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            print_error "Invalid tag format. Must be in the format v1.2.3"
-            exit 1
-        fi
-        
-        # Create and push the tag
-        print_info "Creating tag $new_tag..."
-        git tag -a "$new_tag" -m "Release $new_tag"
-        
-        print_info "Pushing tag to remote..."
-        git push origin "$new_tag"
-        
-        print_success "Tag $new_tag created and pushed."
-    else
-        print_error "Could not parse latest tag. Please create a tag manually."
-        exit 1
-    fi
+    print_success "Cloudflare Pages deployment completed."
 }
 
 # Main deployment function
@@ -240,15 +177,6 @@ main() {
     # Deploy to services
     deploy_supabase
     deploy_cloudflare
-    
-    # Create release tag if running locally
-    if [[ -z "${CI:-}" ]]; then
-        read -p "Do you want to create a new release tag? (y/N): " -n 1 -r
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            create_release_tag
-        fi
-    fi
     
     local version=$(get_version)
     print_success "Release $version completed successfully!"
