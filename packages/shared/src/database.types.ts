@@ -138,6 +138,7 @@ export type Database = {
         Row: {
           created_at: string | null
           display_name: string
+          email: string
           id: string
           updated_at: string | null
           username: string
@@ -145,6 +146,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           display_name: string
+          email: string
           id: string
           updated_at?: string | null
           username: string
@@ -152,6 +154,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           display_name?: string
+          email?: string
           id?: string
           updated_at?: string | null
           username?: string
@@ -184,25 +187,25 @@ export type Database = {
     Functions: {
       add_user_name: {
         Args: {
-          name_text: string
-          user_id: string
-          origin_text?: string
-          meaning_text?: string
           gender_text?: string
+          meaning_text?: string
+          origin_text?: string
+          user_id: string
+          name_text: string
         }
         Returns: string
       }
       get_next_unseen_name: {
         Args: { user_id: string }
         Returns: {
-          uploaded_by: string
-          is_user_uploaded: boolean
-          gender: string
-          popularity: number
-          meaning: string
-          origin: string
-          name: string
           id: string
+          name: string
+          origin: string
+          meaning: string
+          popularity: number
+          gender: string
+          is_user_uploaded: boolean
+          uploaded_by: string
         }[]
       }
       get_user_analytics: {
@@ -212,12 +215,12 @@ export type Database = {
       get_user_matches: {
         Args: { user_id: string }
         Returns: {
-          name_id: string
-          id: string
           user2_id: string
-          created_at: string
-          user1_id: string
+          id: string
+          name_id: string
           name: string
+          user1_id: string
+          created_at: string
         }[]
       }
     }

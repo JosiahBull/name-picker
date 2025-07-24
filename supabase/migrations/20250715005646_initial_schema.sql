@@ -1,11 +1,15 @@
 -- Create custom user profiles table
 CREATE TABLE public.user_profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    email TEXT UNIQUE NOT NULL,
     username TEXT UNIQUE NOT NULL CHECK (username IN ('joe', 'sam')),
     display_name TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Comment explaining the purpose of the user_profiles table
+COMMENT ON TABLE public.user_profiles IS 'Public profile information for each user.';
 
 -- Enable RLS on user_profiles
 ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
@@ -63,6 +67,33 @@ CREATE INDEX idx_matches_user2_id ON public.matches(user2_id);
 CREATE INDEX idx_matches_name_id ON public.matches(name_id);
 CREATE INDEX idx_names_popularity ON public.names(popularity);
 
+-- START: Added for Email/Password Auth --
+
+-- Function to create a profile for a new user from auth.users
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.user_profiles (id, email, username, display_name)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    -- Fallback to use the part of the email before the '@' as a username
+    COALESCE(NEW.raw_user_meta_data->>'username', SPLIT_PART(NEW.email, '@', 1)),
+    -- Fallback to use the part of the email before the '@' as a display name
+    COALESCE(NEW.raw_user_meta_data->>'display_name', SPLIT_PART(NEW.email, '@', 1))
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger to execute the function after a new user is created in auth
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
+-- END: Added for Email/Password Auth --
+
+
 -- Create a function to automatically create matches when both users like the same name
 CREATE OR REPLACE FUNCTION public.create_match_on_mutual_like()
 RETURNS TRIGGER AS $$
@@ -102,7 +133,7 @@ CREATE TRIGGER trigger_create_match_on_mutual_like
 
 -- RLS Policies
 
--- User profiles: Users can only see and update their own profile
+-- User profiles: Users can only see and update their own profile. This policy now also protects the email field.
 CREATE POLICY "Users can view their own profile" ON public.user_profiles
     FOR SELECT USING (auth.uid() = id);
 
@@ -163,18 +194,18 @@ BEGIN
     SELECT COUNT(*) INTO likes
     FROM public.swipes
     WHERE user_id = target_user_id AND action = 'like';
-    
+
     SELECT COUNT(*) INTO dislikes
     FROM public.swipes
     WHERE user_id = target_user_id AND action = 'dislike';
-    
+
     SELECT COUNT(*) INTO matches
     FROM public.matches
     WHERE user1_id = target_user_id OR user2_id = target_user_id;
-    
+
     -- Calculate average swipe time (mock for now - could be enhanced with timing data)
     avg_swipe_time := 2.5;
-    
+
     -- Build result JSON
     result := json_build_object(
         'totalSwipes', COALESCE(total_swipes, 0),
@@ -185,15 +216,19 @@ BEGIN
         'mostPopularNames', ARRAY['Smith', 'Johnson', 'Brown'],
         'sessionDuration', 300
     );
-    
+
     RETURN result;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Grant necessary permissions
-GRANT USAGE ON SCHEMA public TO authenticated;
-GRANT ALL ON public.user_profiles TO authenticated;
-GRANT SELECT ON public.names TO authenticated;
-GRANT ALL ON public.swipes TO authenticated;
-GRANT SELECT ON public.matches TO authenticated;
-GRANT SELECT ON public.user_matches TO authenticated;
+GRANT USAGE ON SCHEMA public TO authenticated, service_role;
+GRANT ALL ON public.user_profiles TO authenticated, service_role;
+GRANT SELECT ON public.names TO authenticated, service_role;
+GRANT ALL ON public.swipes TO authenticated, service_role;
+GRANT SELECT, INSERT ON public.matches TO authenticated, service_role;
+GRANT SELECT ON public.user_matches TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.get_user_analytics(UUID) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.create_match_on_mutual_like() TO authenticated, service_role;
+-- Allow the postgres user to assign the new trigger
+GRANT USAGE ON SCHEMA auth TO postgres;

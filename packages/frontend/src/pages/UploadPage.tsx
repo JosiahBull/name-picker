@@ -55,8 +55,8 @@ export default function UploadPage() {
 			await api.addName(
 				currentUser.id,
 				singleName.trim(),
-				origin || undefined,
-				meaning || undefined,
+				origin,
+				meaning,
 				gender,
 			);
 			setUploadedNames((prev) => [...prev, singleName.trim()]);
@@ -95,7 +95,7 @@ export default function UploadPage() {
 				return;
 			}
 
-			const addedIds = await api.addNamesFromFile(currentUser.id, names);
+			const addedIds = await api.addNames(currentUser.id, names);
 			const addedNames = names.slice(0, addedIds.length);
 			setUploadedNames((prev) => [...prev, ...addedNames]);
 

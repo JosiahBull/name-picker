@@ -53,8 +53,6 @@ export interface ApiClient {
 	getMatches(userId: string): Promise<Match[]>;
 	getUserProfile(userId: string): Promise<User>;
 	getAnalytics(userId: string): Promise<Analytics>;
-	createUser(email: string, name: string): Promise<User>;
-	linkPartner(userId: string, partnerId: string): Promise<void>;
 	addName(
 		userId: string,
 		name: string,
@@ -62,5 +60,5 @@ export interface ApiClient {
 		meaning?: string,
 		gender?: 'masculine' | 'feminine' | 'neutral',
 	): Promise<string>;
-	addNamesFromFile(userId: string, names: string[]): Promise<string[]>;
+	addNames(userId: string, names: string[]): Promise<string[]>;
 }
