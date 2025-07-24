@@ -6,4 +6,16 @@ export default defineConfig({
   server: {
     port: 5173,
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'mui-vendor': ['@mui/material', '@mui/icons-material', '@emotion/react', '@emotion/styled'],
+          'animation-vendor': ['framer-motion'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 500,
+  },
 })

@@ -1,16 +1,33 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import CircularProgress from '@mui/material/CircularProgress';
+import Box from '@mui/material/Box';
 import { ApiProvider } from './context/ApiContext';
 import { UserProvider } from './context/UserContext';
 import { theme } from './theme';
 import ProtectedRoute from './components/ProtectedRoute';
-import LoginPage from './pages/LoginPage';
+
+// Lazy load all pages
+const LoginPage = lazy(() => import('./pages/LoginPage'));
 import HomePage from './pages/HomePage';
-import SwipePage from './pages/SwipePage';
-import MatchesPage from './pages/MatchesPage';
-import AnalyticsPage from './pages/AnalyticsPage';
-import UploadPage from './pages/UploadPage';
+const SwipePage = lazy(() => import('./pages/SwipePage'));
+const MatchesPage = lazy(() => import('./pages/MatchesPage'));
+const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'));
+const UploadPage = lazy(() => import('./pages/UploadPage'));
+
+// Loading component for lazy-loaded pages
+const PageLoader = () => (
+	<Box
+		display="flex"
+		justifyContent="center"
+		alignItems="center"
+		minHeight="100vh"
+	>
+		<CircularProgress />
+	</Box>
+);
 
 function App() {
 	return (
@@ -19,7 +36,8 @@ function App() {
 			<UserProvider>
 				<ApiProvider>
 					<Router>
-						<Routes>
+						<Suspense fallback={<PageLoader />}>
+							<Routes>
 							<Route path="/login" element={<LoginPage />} />
 							<Route
 								path="/"
@@ -61,8 +79,9 @@ function App() {
 									</ProtectedRoute>
 								}
 							/>
-							<Route path="*" element={<Navigate to="/" replace />} />
-						</Routes>
+								<Route path="*" element={<Navigate to="/" replace />} />
+							</Routes>
+						</Suspense>
 					</Router>
 				</ApiProvider>
 			</UserProvider>
