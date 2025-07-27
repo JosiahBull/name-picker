@@ -1,22 +1,21 @@
-import { ReactNode } from 'react';
+import { ComponentChildren } from 'preact';
 import { AppBar, Toolbar, Typography, IconButton, Box, Button, Avatar } from '@mui/material';
 import { ArrowBack, Logout, Person } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { route } from 'preact-router';
 import { useUser } from '../context/UserContext';
 
 interface LayoutProps {
-	children: ReactNode;
+	children: ComponentChildren;
 	title: string;
 	showBackButton?: boolean;
 }
 
 export default function Layout({ children, title, showBackButton = false }: LayoutProps) {
-	const navigate = useNavigate();
 	const { currentUser, logout } = useUser();
 
 	const handleLogout = () => {
 		logout();
-		navigate('/login');
+		route('/login');
 	};
 
 	return (
@@ -24,7 +23,12 @@ export default function Layout({ children, title, showBackButton = false }: Layo
 			<AppBar position="static" color="primary">
 				<Toolbar>
 					{showBackButton && (
-						<IconButton edge="start" color="inherit" onClick={() => navigate(-1)} sx={{ mr: 2 }}>
+						<IconButton
+							edge="start"
+							color="inherit"
+							onClick={() => window.history.back()}
+							sx={{ mr: 2 }}
+						>
 							<ArrowBack />
 						</IconButton>
 					)}
@@ -45,7 +49,10 @@ export default function Layout({ children, title, showBackButton = false }: Layo
 								>
 									<Person sx={{ fontSize: 18 }} />
 								</Avatar>
-								<Typography variant="body2" sx={{ display: { xs: 'none', sm: 'block' } }}>
+								<Typography
+									variant="body2"
+									sx={{ display: { xs: 'none', sm: 'block' } }}
+								>
 									{currentUser.displayName}
 								</Typography>
 							</Box>

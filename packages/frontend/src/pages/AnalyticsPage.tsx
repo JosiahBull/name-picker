@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'preact/hooks';
 import { Box, Typography, CircularProgress, Container } from '@mui/material';
 import { Analytics } from '@name-picker/shared';
 import { useApi } from '../context/ApiContext';
@@ -63,21 +63,42 @@ export default function AnalyticsPage() {
 				</Box>
 
 				<Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-					<Box sx={{ textAlign: 'center', p: 3, bgcolor: 'background.paper', borderRadius: 2 }}>
+					<Box
+						sx={{
+							textAlign: 'center',
+							p: 3,
+							bgcolor: 'background.paper',
+							borderRadius: 2,
+						}}
+					>
 						<Typography variant="h3" color="primary">
 							{analytics.totalSwipes}
 						</Typography>
 						<Typography variant="body1">Total Swipes</Typography>
 					</Box>
 
-					<Box sx={{ textAlign: 'center', p: 3, bgcolor: 'background.paper', borderRadius: 2 }}>
+					<Box
+						sx={{
+							textAlign: 'center',
+							p: 3,
+							bgcolor: 'background.paper',
+							borderRadius: 2,
+						}}
+					>
 						<Typography variant="h3" color="success.main">
 							{analytics.likes}
 						</Typography>
 						<Typography variant="body1">Names Liked</Typography>
 					</Box>
 
-					<Box sx={{ textAlign: 'center', p: 3, bgcolor: 'background.paper', borderRadius: 2 }}>
+					<Box
+						sx={{
+							textAlign: 'center',
+							p: 3,
+							bgcolor: 'background.paper',
+							borderRadius: 2,
+						}}
+					>
 						<Typography variant="h3" color="warning.main">
 							{analytics.matches}
 						</Typography>

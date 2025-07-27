@@ -61,4 +61,6 @@ export interface ApiClient {
 		gender?: 'masculine' | 'feminine' | 'neutral',
 	): Promise<string>;
 	addNames(userId: string, names: string[]): Promise<string[]>;
+	signIn(email: string, password: string): Promise<void>;
+	signOut(): Promise<void>;
 }

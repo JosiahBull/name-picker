@@ -1,15 +1,35 @@
-import { Box, Typography, Button, Container, Paper, Avatar } from '@mui/material';
+import { useState } from 'preact/hooks';
+import {
+	Box,
+	Typography,
+	Button,
+	Container,
+	Paper,
+	Avatar,
+	Alert,
+	CircularProgress,
+} from '@mui/material';
 import { Person, Favorite } from '@mui/icons-material';
 import { useUser, UserId } from '../context/UserContext';
-import { useNavigate } from 'react-router-dom';
+import { route } from 'preact-router';
 
 export default function LoginPage() {
 	const { login, users } = useUser();
-	const navigate = useNavigate();
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState<string | null>(null);
 
-	const handleLogin = (userId: UserId) => {
-		login(userId);
-		navigate('/');
+	const handleLogin = async (userId: UserId) => {
+		setLoading(true);
+		setError(null);
+		try {
+			await login(userId);
+			route('/');
+		} catch (err) {
+			console.error('Login failed:', err);
+			setError('Failed to sign in. Please try again.');
+		} finally {
+			setLoading(false);
+		}
 	};
 
 	return (
@@ -61,23 +81,40 @@ export default function LoginPage() {
 							Who are you?
 						</Typography>
 
+						{error && (
+							<Alert severity="error" sx={{ mb: 2 }}>
+								{error}
+							</Alert>
+						)}
+
 						{Object.entries(users).map(([userId, user]) => (
 							<Button
 								key={user.id}
 								variant="contained"
 								size="large"
-								startIcon={<Person />}
+								startIcon={
+									loading ? (
+										<CircularProgress size={20} color="inherit" />
+									) : (
+										<Person />
+									)
+								}
 								onClick={() => handleLogin(userId as UserId)}
+								disabled={loading}
 								sx={{
 									py: 2,
 									fontSize: '1.1rem',
 									textTransform: 'none',
 									background: `linear-gradient(45deg, ${
-										userId === 'joe' ? '#2196f3 30%, #21cbf3 90%' : '#f44336 30%, #ff9800 90%'
+										userId === 'joe'
+											? '#2196f3 30%, #21cbf3 90%'
+											: '#f44336 30%, #ff9800 90%'
 									})`,
 									'&:hover': {
 										background: `linear-gradient(45deg, ${
-											userId === 'joe' ? '#1976d2 30%, #0097a7 90%' : '#d32f2f 30%, #f57c00 90%'
+											userId === 'joe'
+												? '#1976d2 30%, #0097a7 90%'
+												: '#d32f2f 30%, #f57c00 90%'
 										})`,
 									},
 								}}

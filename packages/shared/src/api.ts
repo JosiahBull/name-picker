@@ -83,7 +83,6 @@ export class SupabaseApiClient implements ApiClient {
 		}
 
 		return { isMatch: false, name };
-
 	}
 
 	async getMatches(userId: string): Promise<Match[]> {
@@ -137,7 +136,6 @@ export class SupabaseApiClient implements ApiClient {
 		}
 
 		return data as unknown as Analytics;
-
 	}
 
 	// Helper method to set the auth session
@@ -201,5 +199,24 @@ export class SupabaseApiClient implements ApiClient {
 		}
 
 		return results;
+	}
+
+	async signIn(email: string, password: string): Promise<void> {
+		const { error } = await this.client.auth.signInWithPassword({
+			email,
+			password,
+		});
+
+		if (error) {
+			throw error;
+		}
+	}
+
+	async signOut(): Promise<void> {
+		const { error } = await this.client.auth.signOut();
+
+		if (error) {
+			throw error;
+		}
 	}
 }

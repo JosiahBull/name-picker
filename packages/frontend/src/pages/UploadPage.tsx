@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState } from 'preact/hooks';
+import { TargetedEvent } from 'preact/compat';
 import {
 	Box,
 	Typography,
@@ -52,13 +53,7 @@ export default function UploadPage() {
 
 		setLoading(true);
 		try {
-			await api.addName(
-				currentUser.id,
-				singleName.trim(),
-				origin,
-				meaning,
-				gender,
-			);
+			await api.addName(currentUser.id, singleName.trim(), origin, meaning, gender);
 			setUploadedNames((prev) => [...prev, singleName.trim()]);
 			showMessage(`Successfully added "${singleName.trim()}"!`);
 			setSingleName('');
@@ -73,8 +68,9 @@ export default function UploadPage() {
 		}
 	};
 
-	const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-		const file = event.target.files?.[0];
+	const handleFileUpload = async (event: Event) => {
+		const target = event.target as HTMLInputElement;
+		const file = target.files?.[0];
 		if (!file || !currentUser) return;
 
 		if (!file.name.endsWith('.txt')) {
@@ -112,7 +108,7 @@ export default function UploadPage() {
 		} finally {
 			setFileLoading(false);
 			// Reset the file input
-			event.target.value = '';
+			target.value = '';
 		}
 	};
 
@@ -142,15 +138,17 @@ export default function UploadPage() {
 						Add Single Name
 					</Typography>
 					<Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-						Propose a new last name for consideration. You can add optional details to help others
-						understand the name's background.
+						Propose a new last name for consideration. You can add optional details to
+						help others understand the name's background.
 					</Typography>
 
 					<Stack spacing={2}>
 						<TextField
 							label="Name"
 							value={singleName}
-							onChange={(e) => setSingleName(e.target.value)}
+							onChange={(e: TargetedEvent<HTMLInputElement>) =>
+								setSingleName(e.currentTarget.value)
+							}
 							fullWidth
 							placeholder="e.g., Martinez"
 							required
@@ -159,7 +157,9 @@ export default function UploadPage() {
 						<TextField
 							label="Origin (Optional)"
 							value={origin}
-							onChange={(e) => setOrigin(e.target.value)}
+							onChange={(e: TargetedEvent<HTMLInputElement>) =>
+								setOrigin(e.currentTarget.value)
+							}
 							fullWidth
 							placeholder="e.g., Spanish"
 						/>
@@ -167,7 +167,9 @@ export default function UploadPage() {
 						<TextField
 							label="Meaning (Optional)"
 							value={meaning}
-							onChange={(e) => setMeaning(e.target.value)}
+							onChange={(e: TargetedEvent<HTMLInputElement>) =>
+								setMeaning(e.currentTarget.value)
+							}
 							fullWidth
 							placeholder="e.g., Son of Martin"
 						/>
@@ -177,7 +179,10 @@ export default function UploadPage() {
 							<Select
 								value={gender}
 								label="Gender Association"
-								onChange={(e) => setGender(e.target.value as 'masculine' | 'feminine' | 'neutral')}
+								onChange={(e: TargetedEvent<Element>) => {
+									const target = e.currentTarget as unknown as { value: string };
+									setGender(target.value as 'masculine' | 'feminine' | 'neutral');
+								}}
 							>
 								<MenuItem value="neutral">Neutral</MenuItem>
 								<MenuItem value="masculine">Masculine</MenuItem>
@@ -210,8 +215,8 @@ export default function UploadPage() {
 						Upload from File
 					</Typography>
 					<Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-						Upload a .txt file with one name per line. This is perfect for bulk uploads of name
-						lists.
+						Upload a .txt file with one name per line. This is perfect for bulk uploads
+						of name lists.
 					</Typography>
 
 					<Box sx={{ textAlign: 'center' }}>
@@ -227,7 +232,9 @@ export default function UploadPage() {
 							<Button
 								variant="outlined"
 								component="span"
-								startIcon={fileLoading ? <CircularProgress size={20} /> : <FileUpload />}
+								startIcon={
+									fileLoading ? <CircularProgress size={20} /> : <FileUpload />
+								}
 								disabled={fileLoading}
 								size="large"
 								sx={{ py: 2, px: 4 }}
@@ -261,7 +268,10 @@ export default function UploadPage() {
 								<Chip key={index} label={name} variant="outlined" color="primary" />
 							))}
 							{uploadedNames.length > 20 && (
-								<Chip label={`+${uploadedNames.length - 20} more`} variant="outlined" />
+								<Chip
+									label={`+${uploadedNames.length - 20} more`}
+									variant="outlined"
+								/>
 							)}
 						</Box>
 					</Paper>
@@ -270,9 +280,9 @@ export default function UploadPage() {
 				{/* Info Box */}
 				<Alert severity="info" sx={{ mt: 3 }}>
 					<Typography variant="body2">
-						<strong>💡 Pro tip:</strong> Names you upload will appear first when swiping, giving
-						them priority over the default name list. This ensures your personalized suggestions get
-						seen first!
+						<strong>💡 Pro tip:</strong> Names you upload will appear first when
+						swiping, giving them priority over the default name list. This ensures your
+						personalized suggestions get seen first!
 					</Typography>
 				</Alert>
 			</Box>

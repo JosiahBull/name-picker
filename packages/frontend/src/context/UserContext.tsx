@@ -1,4 +1,6 @@
-import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
+import { createContext, ComponentChildren } from 'preact';
+import { useContext, useState, useEffect } from 'preact/hooks';
+import { ApiClient } from '@name-picker/shared';
 
 export type UserId = 'joe' | 'sam';
 
@@ -24,8 +26,8 @@ const USERS: Record<UserId, UserInfo> = {
 interface UserContextType {
 	currentUser: UserInfo | null;
 	users: Record<UserId, UserInfo>;
-	login: (userId: UserId) => void;
-	logout: () => void;
+	login: (userId: UserId) => Promise<void>;
+	logout: () => Promise<void>;
 	isAuthenticated: boolean;
 	isLoading: boolean;
 }
@@ -35,33 +37,61 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 const USER_STORAGE_KEY = 'name-picker-user';
 
 interface UserProviderProps {
-	children: ReactNode;
+	children: ComponentChildren;
+	api: ApiClient;
 }
 
-export function UserProvider({ children }: UserProviderProps) {
+export function UserProvider({ children, api }: UserProviderProps) {
 	const [currentUser, setCurrentUser] = useState<UserInfo | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 
-	// Load user from localStorage on mount
+	// Load user from localStorage and restore session on mount
 	useEffect(() => {
-		const savedUserId = localStorage.getItem(USER_STORAGE_KEY) as UserId | null;
-		if (savedUserId && USERS[savedUserId]) {
-			setCurrentUser(USERS[savedUserId]);
-		}
-		setIsLoading(false);
-	}, []);
+		const initializeAuth = async () => {
+			const savedUserId = localStorage.getItem(USER_STORAGE_KEY) as UserId | null;
+			if (savedUserId && USERS[savedUserId]) {
+				try {
+					// Try to restore the session by signing in again
+					const email = savedUserId === 'joe' ? 'joe@example.com' : 'sam@example.com';
+					await api.signIn(email, 'password123');
+					setCurrentUser(USERS[savedUserId]);
+				} catch (error) {
+					// If session restoration fails, clear the stored user
+					console.error('Failed to restore session:', error);
+					localStorage.removeItem(USER_STORAGE_KEY);
+				}
+			}
+			setIsLoading(false);
+		};
 
-	const login = (userId: UserId) => {
+		initializeAuth();
+	}, [api]);
+
+	const login = async (userId: UserId) => {
 		const user = USERS[userId];
 		if (user) {
-			setCurrentUser(user);
-			localStorage.setItem(USER_STORAGE_KEY, userId);
+			try {
+				// Sign in with Supabase using the test credentials
+				const email = userId === 'joe' ? 'joe@example.com' : 'sam@example.com';
+				await api.signIn(email, 'password123');
+				setCurrentUser(user);
+				localStorage.setItem(USER_STORAGE_KEY, userId);
+			} catch (error) {
+				console.error('Failed to sign in:', error);
+				throw error;
+			}
 		}
 	};
 
-	const logout = () => {
-		setCurrentUser(null);
-		localStorage.removeItem(USER_STORAGE_KEY);
+	const logout = async () => {
+		try {
+			await api.signOut();
+			setCurrentUser(null);
+			localStorage.removeItem(USER_STORAGE_KEY);
+		} catch (error) {
+			console.error('Failed to sign out:', error);
+			throw error;
+		}
 	};
 
 	const value: UserContextType = {

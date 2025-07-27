@@ -1,10 +1,11 @@
-import { ReactNode } from 'react';
-import { Navigate } from 'react-router-dom';
+import { ComponentChildren } from 'preact';
+import { route } from 'preact-router';
 import { Box, CircularProgress } from '@mui/material';
 import { useUser } from '../context/UserContext';
 
 interface ProtectedRouteProps {
-	children: ReactNode;
+	children: ComponentChildren;
+	path?: string;
 }
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
@@ -26,7 +27,8 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 	}
 
 	if (!isAuthenticated) {
-		return <Navigate to="/login" replace />;
+		route('/login', true);
+		return null;
 	}
 
 	return <>{children}</>;

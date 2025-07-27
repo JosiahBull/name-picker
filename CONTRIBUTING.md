@@ -23,6 +23,7 @@ pnpm dev
 ```
 
 The app will be available at:
+
 - **Frontend**: http://localhost:5173
 - **Supabase Studio**: http://localhost:54323
 
@@ -104,6 +105,7 @@ pnpm gen-types
 ## 🏗 Architecture Overview
 
 ### Frontend (React)
+
 - **Vite** for fast development and building
 - **Material-UI** for consistent design components
 - **React Router** for navigation
@@ -111,12 +113,14 @@ pnpm gen-types
 - **TypeScript** for type safety
 
 ### Backend (Supabase)
+
 - **PostgreSQL** database with Row Level Security
 - **Supabase Edge Functions** for serverless API
 - **Database functions** for complex queries
 - **Real-time subscriptions** for live updates
 
 ### Shared Package
+
 - **TypeScript types** shared between frontend and any future backend
 - **API client** for consistent database interactions
 - **Utilities** and common functions
@@ -142,21 +146,21 @@ pnpm audit        # Security audit
 ```typescript
 // ✅ Good: Explicit interface definitions
 interface UserProfile {
-  id: string
-  name: string
-  email?: string
+	id: string;
+	name: string;
+	email?: string;
 }
 
 // ✅ Good: Descriptive function names
 async function getUserProfile(userId: string): Promise<UserProfile> {
-  // implementation
+	// implementation
 }
 
 // ❌ Avoid: any types
-const userData: any = fetchUser()
+const userData: any = fetchUser();
 
 // ✅ Better: Proper typing
-const userData: UserProfile = await fetchUser()
+const userData: UserProfile = await fetchUser();
 ```
 
 ### React Guidelines
@@ -188,17 +192,17 @@ function useNameFetcher(userId: string) {
 
 ```typescript
 // ✅ Good: Organized imports
-import React from 'react'
-import { Button, Card } from '@mui/material'
+import React from 'react';
+import { Button, Card } from '@mui/material';
 
-import { SupabaseApiClient } from '@name-picker/shared'
+import { SupabaseApiClient } from '@name-picker/shared';
 
-import { useUser } from '../context/UserContext'
-import './NameCard.css'
+import { useUser } from '../context/UserContext';
+import './NameCard.css';
 
 // ✅ Good: Named exports
-export { NameCard }
-export type { NameCardProps }
+export { NameCard };
+export type { NameCardProps };
 ```
 
 ## 🔧 Common Tasks
@@ -226,16 +230,19 @@ export type { NameCardProps }
 ## 🐛 Debugging
 
 ### Frontend Issues
+
 - Check browser console for errors
 - Verify API calls in Network tab
 - Check component state with React DevTools
 
 ### Database Issues
+
 - Use Supabase Studio at http://localhost:54323
 - Check SQL Query tab for query debugging
 - Review RLS policies in Authentication > Policies
 
 ### Environment Issues
+
 ```bash
 # Reset everything
 pnpm clean
@@ -248,34 +255,38 @@ pnpm supabase:reset
 ## 📋 Pull Request Process
 
 1. **Create Feature Branch**
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
+
+    ```bash
+    git checkout -b feature/your-feature-name
+    ```
 
 2. **Make Changes**
-   - Follow code style guidelines
-   - Add/update types as needed
-   - Test your changes manually
+    - Follow code style guidelines
+    - Add/update types as needed
+    - Test your changes manually
 
 3. **Run Quality Checks**
-   ```bash
-   ./scripts/ci-test.sh
-   ```
+
+    ```bash
+    ./scripts/ci-test.sh
+    ```
 
 4. **Commit with Clear Messages**
-   ```bash
-   git commit -m "feat: add name upload validation"
-   ```
+
+    ```bash
+    git commit -m "feat: add name upload validation"
+    ```
 
 5. **Push and Create PR**
-   ```bash
-   git push origin feature/your-feature-name
-   ```
+
+    ```bash
+    git push origin feature/your-feature-name
+    ```
 
 6. **PR Review**
-   - CI checks must pass
-   - Code review from maintainers
-   - Address any feedback
+    - CI checks must pass
+    - Code review from maintainers
+    - Address any feedback
 
 ## 🆘 Getting Help
 
