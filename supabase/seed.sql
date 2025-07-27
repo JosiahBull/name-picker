@@ -112,9 +112,9 @@ INSERT INTO auth.identities (
 ) ON CONFLICT (id) DO NOTHING;
 
 -- Insert user profiles
-INSERT INTO public.user_profiles (id, username, display_name, email) VALUES
-('550e8400-e29b-41d4-a716-446655440001', 'joe', 'Joe', 'joe@example.com'),
-('550e8400-e29b-41d4-a716-446655440002', 'sam', 'Sam', 'sam@example.com')
+INSERT INTO public.user_profiles (id, username, display_name) VALUES
+('550e8400-e29b-41d4-a716-446655440001', 'joe', 'Joe'),
+('550e8400-e29b-41d4-a716-446655440002', 'sam', 'Sam')
 ON CONFLICT (id) DO NOTHING;
 
 -- Insert sample names

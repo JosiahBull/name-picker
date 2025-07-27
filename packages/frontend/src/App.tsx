@@ -11,7 +11,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 
 // Lazy load all pages
 const LoginPage = lazy(() => import('./pages/LoginPage'));
-import HomePage from './pages/HomePage';
+const HomePage = lazy(() => import('./pages/HomePage'));
 const SwipePage = lazy(() => import('./pages/SwipePage'));
 const MatchesPage = lazy(() => import('./pages/MatchesPage'));
 const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'));

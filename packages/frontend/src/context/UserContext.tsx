@@ -41,57 +41,30 @@ interface UserProviderProps {
 	api: ApiClient;
 }
 
-export function UserProvider({ children, api }: UserProviderProps) {
+export function UserProvider({ children }: UserProviderProps) {
 	const [currentUser, setCurrentUser] = useState<UserInfo | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 
-	// Load user from localStorage and restore session on mount
-	useEffect(() => {
-		const initializeAuth = async () => {
-			const savedUserId = localStorage.getItem(USER_STORAGE_KEY) as UserId | null;
-			if (savedUserId && USERS[savedUserId]) {
-				try {
-					// Try to restore the session by signing in again
-					const email = savedUserId === 'joe' ? 'joe@example.com' : 'sam@example.com';
-					await api.signIn(email, 'password123');
-					setCurrentUser(USERS[savedUserId]);
-				} catch (error) {
-					// If session restoration fails, clear the stored user
-					console.error('Failed to restore session:', error);
-					localStorage.removeItem(USER_STORAGE_KEY);
-				}
-			}
-			setIsLoading(false);
-		};
-
-		initializeAuth();
-	}, [api]);
+	// Load user from localStorage
+useEffect(() => {
+		const savedUserId = localStorage.getItem(USER_STORAGE_KEY) as UserId | null;
+		if (savedUserId && USERS[savedUserId]) {
+			setCurrentUser(USERS[savedUserId]);
+		}
+		setIsLoading(false);
+	}, []);
 
 	const login = async (userId: UserId) => {
 		const user = USERS[userId];
 		if (user) {
-			try {
-				// Sign in with Supabase using the test credentials
-				const email = userId === 'joe' ? 'joe@example.com' : 'sam@example.com';
-				await api.signIn(email, 'password123');
-				setCurrentUser(user);
-				localStorage.setItem(USER_STORAGE_KEY, userId);
-			} catch (error) {
-				console.error('Failed to sign in:', error);
-				throw error;
-			}
+			setCurrentUser(user);
+			localStorage.setItem(USER_STORAGE_KEY, userId);
 		}
 	};
 
 	const logout = async () => {
-		try {
-			await api.signOut();
-			setCurrentUser(null);
-			localStorage.removeItem(USER_STORAGE_KEY);
-		} catch (error) {
-			console.error('Failed to sign out:', error);
-			throw error;
-		}
+		setCurrentUser(null);
+		localStorage.removeItem(USER_STORAGE_KEY);
 	};
 
 	const value: UserContextType = {
