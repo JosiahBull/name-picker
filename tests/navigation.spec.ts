@@ -1,4 +1,4 @@
-import { test } from '../fixtures/auth';
+import { test } from './fixtures';
 import { expect } from '@playwright/test';
 
 test.describe('Navigation', () => {

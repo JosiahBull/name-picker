@@ -1,4 +1,4 @@
-import { test } from '../fixtures/auth';
+import { test } from './fixtures';
 import { expect } from '@playwright/test';
 
 test.describe('Name Upload and Prioritization', () => {
@@ -7,9 +7,6 @@ test.describe('Name Upload and Prioritization', () => {
 		samContext,
 		databaseHelper,
 	}) => {
-		// Increase timeout for this complex test
-		test.setTimeout(60000);
-
 		const joePage = joeContext.page;
 		const samPage = samContext.page;
 

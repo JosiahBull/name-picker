@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { Database } from '../../packages/shared/src/database.types';
+import { Database } from '../packages/shared/src/database.types';
 
 export class DatabaseHelper {
 	private supabase: SupabaseClient<Database>;
@@ -60,15 +60,23 @@ export class DatabaseHelper {
 			// Get test user IDs (Joe and Sam)
 			const { joeId, samId } = await this.getTestUserIds();
 
-			// Clear matches involving test users
-			const { error: matchError } = await this.supabase
+			// Clear matches involving test users - use two separate queries to be safe
+			const { error: match1Error } = await this.supabase
 				.from('matches')
 				.delete()
-				.in('user1_id', [joeId, samId])
-				.or(`user2_id.eq.${joeId},user2_id.eq.${samId}`);
+				.in('user1_id', [joeId, samId]);
+			
+			if (match1Error) {
+				throw match1Error;
+			}
+			
+			const { error: match2Error } = await this.supabase
+				.from('matches')
+				.delete()
+				.in('user2_id', [joeId, samId]);
 
-			if (matchError) {
-				throw matchError;
+			if (match2Error) {
+				throw match2Error;
 			}
 
 			// Clear swipes by test users - try multiple times if needed
@@ -102,6 +110,16 @@ export class DatabaseHelper {
 				throw testNameError;
 			}
 
+			// Debug: Check if any matches remain
+			const { data: remainingMatches } = await this.supabase
+				.from('matches')
+				.select('*')
+				.or(`user1_id.in.(${joeId},${samId}),user2_id.in.(${joeId},${samId})`);
+			
+			if (remainingMatches && remainingMatches.length > 0) {
+				console.warn('⚠️ Warning: Found remaining matches after cleanup:', remainingMatches);
+			}
+			
 			console.log('✅ Test data cleared successfully');
 		} catch (error) {
 			console.error('❌ Error clearing test data:', error);

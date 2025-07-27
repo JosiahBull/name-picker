@@ -1,24 +1,34 @@
 import { BrowserContext, Page, expect, test as base } from '@playwright/test';
-import { DatabaseHelper } from './database';
+import { DatabaseHelper } from './helpers';
 
 async function loginAsJoe(page: Page) {
 	await page.goto('/login');
+	await page.waitForSelector('button:has-text("Joe")', { state: 'visible' });
 	await page.click('button:has-text("Joe")');
-	await expect(page).toHaveURL('/');
-	await expect(page.locator('h3')).toContainText('Welcome, Joe!');
+	
+	// Wait for navigation and ensure we're on the home page
+	await page.waitForURL('/', { timeout: 10000 });
+	
+	// Wait for the welcome message to appear
+	await page.waitForSelector('h3:has-text("Welcome, Joe!")', { state: 'visible', timeout: 10000 });
 }
 
 async function loginAsSam(page: Page) {
 	await page.goto('/login');
+	await page.waitForSelector('button:has-text("Sam")', { state: 'visible' });
 	await page.click('button:has-text("Sam")');
-	await expect(page).toHaveURL('/');
-	await expect(page.locator('h3')).toContainText('Welcome, Sam!');
+	
+	// Wait for navigation and ensure we're on the home page
+	await page.waitForURL('/', { timeout: 10000 });
+	
+	// Wait for the welcome message to appear
+	await page.waitForSelector('h3:has-text("Welcome, Sam!")', { state: 'visible', timeout: 10000 });
 }
 
-async function logout(page: Page) {
-	await page.click('button:has-text("Logout")');
-	await expect(page).toHaveURL('/login');
-}
+// async function logout(page: Page) {
+	// await page.click('button:has-text("Logout")');
+	// await expect(page).toHaveURL('/login');
+// }
 
 export interface UserContext {
 	context: BrowserContext;
@@ -31,7 +41,6 @@ export const test = base.extend<{
 	databaseHelper: DatabaseHelper;
 	joeContext: UserContext;
 	samContext: UserContext;
-	logout: ({ page }: { page: Page }) => Promise<void>;
 }>({
 	databaseHelper: async ({}, use) => {
 		const dbHelper = new DatabaseHelper();
@@ -42,7 +51,7 @@ export const test = base.extend<{
 		// Provide the helper to the test
 		await use(dbHelper);
 
-		// Clear database after each test to ensure clean state
+		// Cleanup
 		await dbHelper.clearTestData();
 	},
 

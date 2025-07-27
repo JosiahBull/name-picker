@@ -7,15 +7,10 @@ export default defineConfig({
 	testDir: './tests',
 	forbidOnly: !!process.env.CI,
 	retries: 0,
-	workers: process.env.CI ? 1 : undefined,
-	/* Reporter to use. See https://playwright.dev/docs/test-reporters */
-	reporter: [['html'], ['list']],
-	/* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+	workers: 1,
+	reporter: !!process.env.CI ? [['html', { open: 'never' }], ['dot']] : [['html', { open: 'always' }], ['list']],
 	use: {
-		/* Base URL to use in actions like `await page.goto('/')`. */
 		baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:5173',
-
-		/* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
 		trace: 'on',
 		screenshot: 'on',
 		video: 'on',
@@ -23,21 +18,11 @@ export default defineConfig({
 
 	/* Configure projects for major browsers */
 	projects: [
-		// Parallel-safe tests (no database modifications)
 		{
-			name: 'firefox-parallel',
+			name: 'firefox',
 			use: { ...devices['Desktop Firefox'] },
-			testDir: './tests/parallel',
+			testDir: './tests',
 			fullyParallel: true,
-		},
-
-		// Serial tests (database modifications, swiping, analytics)
-		{
-			name: 'firefox-serial',
-			use: { ...devices['Desktop Firefox'] },
-			testDir: './tests/serial',
-			fullyParallel: false,
-			workers: 1,
 		},
 	],
 	webServer: {
