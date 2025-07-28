@@ -37,11 +37,6 @@ async function loginAsSam(page: Page) {
 	});
 }
 
-// async function logout(page: Page) {
-// await page.click('button:has-text("Logout")');
-// await expect(page).toHaveURL('/login');
-// }
-
 export interface UserContext {
 	context: BrowserContext;
 	page: Page;

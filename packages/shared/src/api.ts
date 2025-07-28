@@ -3,10 +3,18 @@ import { Database } from './database.types';
 import { Name, SwipeAction, Match, User, Analytics, SwipeResult, ApiClient } from './types';
 
 export class SupabaseApiClient implements ApiClient {
+	private static instance: SupabaseApiClient | null = null;
 	private client: SupabaseClient<Database>;
 
-	constructor(supabaseUrl: string, supabaseKey: string) {
+	private constructor(supabaseUrl: string, supabaseKey: string) {
 		this.client = createClient<Database>(supabaseUrl, supabaseKey);
+	}
+
+	public static getInstance(supabaseUrl: string, supabaseKey: string): SupabaseApiClient {
+		if (!SupabaseApiClient.instance) {
+			SupabaseApiClient.instance = new SupabaseApiClient(supabaseUrl, supabaseKey);
+		}
+		return SupabaseApiClient.instance;
 	}
 
 	async getNextName(userId: string): Promise<Name | null> {
