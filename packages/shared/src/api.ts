@@ -117,7 +117,7 @@ export class SupabaseApiClient implements ApiClient {
 
 		return {
 			id: data.id,
-			email: data.email,
+			email: data.email || '',
 			name: data.display_name,
 			// Hardcoded partner logic is fine - only two of us using the app. :)
 			partnerId: data.username === 'joe' ? 'sam' : 'joe',

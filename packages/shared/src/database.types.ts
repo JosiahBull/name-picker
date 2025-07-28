@@ -132,7 +132,7 @@ export type Database = {
 				Row: {
 					created_at: string | null;
 					display_name: string;
-					email: string;
+					email: string | null;
 					id: string;
 					updated_at: string | null;
 					username: string;
@@ -140,7 +140,7 @@ export type Database = {
 				Insert: {
 					created_at?: string | null;
 					display_name: string;
-					email: string;
+					email?: string | null;
 					id: string;
 					updated_at?: string | null;
 					username: string;
@@ -148,7 +148,7 @@ export type Database = {
 				Update: {
 					created_at?: string | null;
 					display_name?: string;
-					email?: string;
+					email?: string | null;
 					id?: string;
 					updated_at?: string | null;
 					username?: string;
@@ -181,10 +181,10 @@ export type Database = {
 		Functions: {
 			add_user_name: {
 				Args: {
-					gender_text?: string;
-					meaning_text?: string;
-					origin_text?: string;
 					user_id: string;
+					origin_text?: string;
+					meaning_text?: string;
+					gender_text?: string;
 					name_text: string;
 				};
 				Returns: string;
@@ -192,14 +192,14 @@ export type Database = {
 			get_next_unseen_name: {
 				Args: { user_id: string };
 				Returns: {
-					id: string;
+					uploaded_by: string;
 					name: string;
+					id: string;
+					gender: string;
+					is_user_uploaded: boolean;
 					origin: string;
 					meaning: string;
 					popularity: number;
-					gender: string;
-					is_user_uploaded: boolean;
-					uploaded_by: string;
 				}[];
 			};
 			get_user_analytics: {
@@ -209,12 +209,12 @@ export type Database = {
 			get_user_matches: {
 				Args: { user_id: string };
 				Returns: {
-					user2_id: string;
-					id: string;
-					name_id: string;
-					name: string;
-					user1_id: string;
 					created_at: string;
+					user2_id: string;
+					user1_id: string;
+					name: string;
+					name_id: string;
+					id: string;
 				}[];
 			};
 		};

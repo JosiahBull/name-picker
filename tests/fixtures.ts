@@ -3,31 +3,43 @@ import { DatabaseHelper } from './helpers';
 
 async function loginAsJoe(page: Page) {
 	await page.goto('/login');
-	await page.waitForSelector('button:has-text("Joe")', { state: 'visible' });
-	await page.click('button:has-text("Joe")');
-	
+
+	// Fill in login form
+	await page.fill('input[type="email"]', 'joe@example.com');
+	await page.fill('input[type="password"]', 'password123');
+	await page.click('button[type="submit"]:has-text("Login")');
+
 	// Wait for navigation and ensure we're on the home page
 	await page.waitForURL('/', { timeout: 10000 });
-	
+
 	// Wait for the welcome message to appear
-	await page.waitForSelector('h3:has-text("Welcome, Joe!")', { state: 'visible', timeout: 10000 });
+	await page.waitForSelector('h3:has-text("Welcome, Joe!")', {
+		state: 'visible',
+		timeout: 10000,
+	});
 }
 
 async function loginAsSam(page: Page) {
 	await page.goto('/login');
-	await page.waitForSelector('button:has-text("Sam")', { state: 'visible' });
-	await page.click('button:has-text("Sam")');
-	
+
+	// Fill in login form
+	await page.fill('input[type="email"]', 'sam@example.com');
+	await page.fill('input[type="password"]', 'password123');
+	await page.click('button[type="submit"]:has-text("Login")');
+
 	// Wait for navigation and ensure we're on the home page
 	await page.waitForURL('/', { timeout: 10000 });
-	
+
 	// Wait for the welcome message to appear
-	await page.waitForSelector('h3:has-text("Welcome, Sam!")', { state: 'visible', timeout: 10000 });
+	await page.waitForSelector('h3:has-text("Welcome, Sam!")', {
+		state: 'visible',
+		timeout: 10000,
+	});
 }
 
 // async function logout(page: Page) {
-	// await page.click('button:has-text("Logout")');
-	// await expect(page).toHaveURL('/login');
+// await page.click('button:has-text("Logout")');
+// await expect(page).toHaveURL('/login');
 // }
 
 export interface UserContext {

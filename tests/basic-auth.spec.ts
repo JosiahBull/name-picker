@@ -7,14 +7,18 @@ test.describe('Basic Authentication', () => {
 		// Should redirect to login page
 		await expect(page).toHaveURL('/login');
 		await expect(page.locator('h3')).toContainText('Name Picker');
-		await expect(page.locator('h5')).toContainText('Who are you?');
+		// Check for login form elements
+		await expect(page.locator('input[type="email"]')).toBeVisible();
+		await expect(page.locator('input[type="password"]')).toBeVisible();
 	});
 
 	test('should allow Joe to login', async ({ page }) => {
 		await page.goto('/login');
 
-		// Click Joe's button
-		await page.click('button:has-text("Joe")');
+		// Fill in login form
+		await page.fill('input[type="email"]', 'joe@example.com');
+		await page.fill('input[type="password"]', 'password123');
+		await page.click('button[type="submit"]:has-text("Login")');
 
 		// Should redirect to home page
 		await expect(page).toHaveURL('/');
@@ -24,8 +28,10 @@ test.describe('Basic Authentication', () => {
 	test('should allow Sam to login', async ({ page }) => {
 		await page.goto('/login');
 
-		// Click Sam's button
-		await page.click('button:has-text("Sam")');
+		// Fill in login form
+		await page.fill('input[type="email"]', 'sam@example.com');
+		await page.fill('input[type="password"]', 'password123');
+		await page.click('button[type="submit"]:has-text("Login")');
 
 		// Should redirect to home page
 		await expect(page).toHaveURL('/');
@@ -34,7 +40,11 @@ test.describe('Basic Authentication', () => {
 
 	test('should persist login state after page refresh', async ({ page }) => {
 		await page.goto('/login');
-		await page.click('button:has-text("Joe")');
+
+		// Login as Joe
+		await page.fill('input[type="email"]', 'joe@example.com');
+		await page.fill('input[type="password"]', 'password123');
+		await page.click('button[type="submit"]:has-text("Login")');
 
 		// Verify logged in
 		await expect(page).toHaveURL('/');
@@ -52,7 +62,14 @@ test.describe('Basic Authentication', () => {
 
 	test('should allow logout', async ({ page }) => {
 		await page.goto('/login');
-		await page.click('button:has-text("Joe")');
+
+		// Login as Joe
+		await page.fill('input[type="email"]', 'joe@example.com');
+		await page.fill('input[type="password"]', 'password123');
+		await page.click('button[type="submit"]:has-text("Login")');
+
+		// Wait for home page
+		await expect(page).toHaveURL('/');
 
 		// Navigate to settings and logout
 		await page.click('button:has-text("Logout")');

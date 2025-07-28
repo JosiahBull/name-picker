@@ -65,11 +65,11 @@ export class DatabaseHelper {
 				.from('matches')
 				.delete()
 				.in('user1_id', [joeId, samId]);
-			
+
 			if (match1Error) {
 				throw match1Error;
 			}
-			
+
 			const { error: match2Error } = await this.supabase
 				.from('matches')
 				.delete()
@@ -115,11 +115,14 @@ export class DatabaseHelper {
 				.from('matches')
 				.select('*')
 				.or(`user1_id.in.(${joeId},${samId}),user2_id.in.(${joeId},${samId})`);
-			
+
 			if (remainingMatches && remainingMatches.length > 0) {
-				console.warn('⚠️ Warning: Found remaining matches after cleanup:', remainingMatches);
+				console.warn(
+					'⚠️ Warning: Found remaining matches after cleanup:',
+					remainingMatches,
+				);
 			}
-			
+
 			console.log('✅ Test data cleared successfully');
 		} catch (error) {
 			console.error('❌ Error clearing test data:', error);
