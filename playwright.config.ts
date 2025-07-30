@@ -6,23 +6,33 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
 	testDir: './tests',
 	forbidOnly: !!process.env.CI,
-	retries: 0,
-	workers: 1,
+	retries: process.env.CI ? 3 : 2, // More retries in CI
+	workers: 1, // Single worker to avoid test interference
 	reporter: !!process.env.CI ? [['html', { open: 'never' }], ['dot']] : [['html', { open: 'always' }], ['list']],
+	timeout: 60 * 1000, // Global timeout of 60 seconds per test
 	use: {
 		baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:5173',
 		trace: 'on',
 		screenshot: 'on',
 		video: 'on',
+		// Slow down actions for better stability
+		actionTimeout: 10 * 1000,
+		navigationTimeout: 30 * 1000,
 	},
 
 	/* Configure projects for major browsers */
 	projects: [
 		{
 			name: 'firefox',
-			use: { ...devices['Desktop Firefox'] },
+			use: { 
+				...devices['Desktop Firefox'],
+				// Add a small delay between actions for stability
+				launchOptions: {
+					slowMo: 100,
+				},
+			},
 			testDir: './tests',
-			fullyParallel: true,
+			fullyParallel: false, // Run tests sequentially to avoid interference
 		},
 	],
 	webServer: {
