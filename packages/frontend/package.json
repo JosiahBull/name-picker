@@ -1,41 +1,39 @@
 {
-  "name": "@name-picker/frontend",
-  "version": "0.0.1",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
-    "typecheck": "tsc --noEmit",
-    "clean": "rimraf dist node_modules"
-  },
-  "dependencies": {
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.1",
-    "@mui/icons-material": "^7.2.0",
-    "@mui/material": "^7.2.0",
-    "@name-picker/shared": "workspace:*",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "react-router-dom": "^7.6.3",
-    "framer-motion": "^11.17.4"
-  },
-  "devDependencies": {
-    "@types/react": "^19.1.8",
-    "@types/react-dom": "^19.1.6",
-    "@typescript-eslint/eslint-plugin": "^8.37.0",
-    "@typescript-eslint/parser": "^8.37.0",
-    "@vitejs/plugin-react": "^4.6.0",
-    "eslint": "^9.31.0",
-    "eslint-config-prettier": "^10.1.5",
-    "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "prettier": "^3.6.2",
-    "rimraf": "^6.0.1",
-    "typescript": "^5.8.3",
-    "vite": "^7.0.4"
-  }
+	"name": "@name-picker/frontend",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "tsc && vite build",
+		"preview": "vite preview",
+		"lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+		"format": "prettier --write \"src/**/*.{ts,tsx,css,js,css,json}\"",
+		"typecheck": "tsc --noEmit",
+		"clean": "rimraf dist node_modules"
+	},
+	"dependencies": {
+		"@emotion/react": "^11.14.0",
+		"@emotion/styled": "^11.14.1",
+		"@mui/icons-material": "^7.2.0",
+		"@mui/material": "^7.2.0",
+		"@name-picker/shared": "workspace:*",
+		"@preact/compat": "^18.3.1",
+		"@supabase/supabase-js": "^2.53.0",
+		"framer-motion": "^12.23.12",
+		"preact": "^10.27.0",
+		"preact-router": "^4.1.2"
+	},
+	"devDependencies": {
+		"@preact/preset-vite": "^2.10.2",
+		"@typescript-eslint/eslint-plugin": "^8.38.0",
+		"@typescript-eslint/parser": "^8.38.0",
+		"eslint": "^9.32.0",
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-react": "^7.37.5",
+		"prettier": "^3.6.2",
+		"rimraf": "^6.0.1",
+		"typescript": "^5.8.3",
+		"vite": "^7.0.6"
+	}
 }

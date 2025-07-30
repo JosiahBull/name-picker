@@ -1,11 +1,10 @@
 import { Box, Typography, Button, Container, Paper } from '@mui/material';
 import { Favorite, Analytics, People, CloudUpload } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { route } from 'preact-router';
 import { useUser } from '../context/UserContext';
 import Layout from '../components/Layout';
 
 export default function HomePage() {
-	const navigate = useNavigate();
 	const { currentUser } = useUser();
 
 	return (
@@ -19,8 +18,8 @@ export default function HomePage() {
 						Find Your Perfect Last Name
 					</Typography>
 					<Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-						Swipe through last names together and discover your matches. It's like Tinder, but for
-						choosing your family name!
+						Swipe through last names together and discover your matches. It's like
+						Tinder, but for choosing your family name!
 					</Typography>
 				</Box>
 
@@ -30,7 +29,7 @@ export default function HomePage() {
 							variant="contained"
 							size="large"
 							startIcon={<Favorite />}
-							onClick={() => navigate('/swipe')}
+							onClick={() => route('/swipe')}
 							sx={{ py: 2 }}
 						>
 							Start Swiping
@@ -40,7 +39,7 @@ export default function HomePage() {
 							variant="outlined"
 							size="large"
 							startIcon={<CloudUpload />}
-							onClick={() => navigate('/upload')}
+							onClick={() => route('/upload')}
 							sx={{ py: 2 }}
 						>
 							Upload Names
@@ -50,7 +49,7 @@ export default function HomePage() {
 							variant="outlined"
 							size="large"
 							startIcon={<People />}
-							onClick={() => navigate('/matches')}
+							onClick={() => route('/matches')}
 							sx={{ py: 2 }}
 						>
 							View Matches
@@ -60,7 +59,7 @@ export default function HomePage() {
 							variant="outlined"
 							size="large"
 							startIcon={<Analytics />}
-							onClick={() => navigate('/analytics')}
+							onClick={() => route('/analytics')}
 							sx={{ py: 2 }}
 						>
 							Analytics
@@ -70,8 +69,8 @@ export default function HomePage() {
 
 				<Box sx={{ textAlign: 'center' }}>
 					<Typography variant="body2" color="text.secondary">
-						💡 Tip: Swipe right to like a name, left to pass. Names you both like will appear in
-						your matches!
+						💡 Tip: Swipe right to like a name, left to pass. Names you both like will
+						appear in your matches!
 					</Typography>
 				</Box>
 			</Container>

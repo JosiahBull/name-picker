@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from 'preact/hooks';
 import { motion, PanInfo, useMotionValue, useTransform } from 'framer-motion';
 import { Card, CardContent, Typography, Box, Chip } from '@mui/material';
 import { Name, SwipeDirection } from '@name-picker/shared';
@@ -73,7 +73,12 @@ export default function NameCard({ name, onSwipe, disabled = false }: NameCardPr
 						p: 3,
 					}}
 				>
-					<Typography variant="h2" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
+					<Typography
+						variant="h2"
+						component="h1"
+						gutterBottom
+						sx={{ fontWeight: 'bold' }}
+					>
 						{name.name}
 					</Typography>
 

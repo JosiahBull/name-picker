@@ -1,75 +1,125 @@
-import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
-
-export type UserId = 'joe' | 'sam';
+import { createContext, ComponentChildren } from 'preact';
+import { useContext, useState, useEffect } from 'preact/hooks';
+import { ApiClient } from '@name-picker/shared';
+import { supabase } from '../lib/supabase';
+import type { User } from '@supabase/supabase-js';
 
 interface UserInfo {
-	id: string; // UUID from database
-	name: string;
+	id: string;
+	username: string;
 	displayName: string;
+	email: string;
 }
-
-const USERS: Record<UserId, UserInfo> = {
-	joe: {
-		id: '550e8400-e29b-41d4-a716-446655440001', // UUID from seed data
-		name: 'joe',
-		displayName: 'Joe',
-	},
-	sam: {
-		id: '550e8400-e29b-41d4-a716-446655440002', // UUID from seed data
-		name: 'sam',
-		displayName: 'Sam',
-	},
-};
 
 interface UserContextType {
 	currentUser: UserInfo | null;
-	users: Record<UserId, UserInfo>;
-	login: (userId: UserId) => void;
-	logout: () => void;
+	authUser: User | null;
+	login: (email: string, password: string) => Promise<void>;
+	logout: () => Promise<void>;
 	isAuthenticated: boolean;
 	isLoading: boolean;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-const USER_STORAGE_KEY = 'name-picker-user';
-
 interface UserProviderProps {
-	children: ReactNode;
+	children: ComponentChildren;
+	api: ApiClient;
 }
 
 export function UserProvider({ children }: UserProviderProps) {
 	const [currentUser, setCurrentUser] = useState<UserInfo | null>(null);
+	const [authUser, setAuthUser] = useState<User | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 
-	// Load user from localStorage on mount
-	useEffect(() => {
-		const savedUserId = localStorage.getItem(USER_STORAGE_KEY) as UserId | null;
-		if (savedUserId && USERS[savedUserId]) {
-			setCurrentUser(USERS[savedUserId]);
-		}
-		setIsLoading(false);
-	}, []);
+	// Load user profile from Supabase
+	const loadUserProfile = async (user: User) => {
+		try {
+			const { data, error } = await supabase
+				.from('user_profiles')
+				.select('*')
+				.eq('id', user.id)
+				.single();
 
-	const login = (userId: UserId) => {
-		const user = USERS[userId];
-		if (user) {
-			setCurrentUser(user);
-			localStorage.setItem(USER_STORAGE_KEY, userId);
+			if (error) throw error;
+
+			if (data) {
+				setCurrentUser({
+					id: data.id,
+					username: data.username,
+					displayName: data.display_name,
+					email: user.email || '',
+				});
+			}
+		} catch (error) {
+			console.error('Error loading user profile:', error);
 		}
 	};
 
-	const logout = () => {
+	// Check for existing session on mount
+	useEffect(() => {
+		const checkSession = async () => {
+			try {
+				const {
+					data: { session },
+				} = await supabase.auth.getSession();
+				if (session?.user) {
+					setAuthUser(session.user);
+					await loadUserProfile(session.user);
+				}
+			} catch (error) {
+				console.error('Error checking session:', error);
+			} finally {
+				setIsLoading(false);
+			}
+		};
+
+		checkSession();
+
+		// Listen for auth changes
+		const {
+			data: { subscription },
+		} = supabase.auth.onAuthStateChange(async (_, session) => {
+			if (session?.user) {
+				setAuthUser(session.user);
+				await loadUserProfile(session.user);
+			} else {
+				setAuthUser(null);
+				setCurrentUser(null);
+			}
+		});
+
+		return () => {
+			subscription.unsubscribe();
+		};
+	}, []);
+
+	const login = async (email: string, password: string) => {
+		const { data, error } = await supabase.auth.signInWithPassword({
+			email,
+			password,
+		});
+
+		if (error) throw error;
+
+		if (data.user) {
+			setAuthUser(data.user);
+			await loadUserProfile(data.user);
+		}
+	};
+
+	const logout = async () => {
+		await supabase.auth.signOut();
+		setAuthUser(null);
 		setCurrentUser(null);
-		localStorage.removeItem(USER_STORAGE_KEY);
 	};
 
 	const value: UserContextType = {
 		currentUser,
-		users: USERS,
+		authUser,
 		login,
 		logout,
-		isAuthenticated: currentUser !== null,
+		isAuthenticated: authUser !== null,
 		isLoading,
 	};
 
@@ -83,3 +133,6 @@ export function useUser(): UserContextType {
 	}
 	return context;
 }
+
+// Re-export for backward compatibility
+export type UserId = 'joe' | 'sam';

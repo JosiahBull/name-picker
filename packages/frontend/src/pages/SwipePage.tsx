@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'preact/hooks';
 import { Box, Typography, CircularProgress, Button } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Name, SwipeDirection } from '@name-picker/shared';
@@ -99,7 +99,10 @@ export default function SwipePage() {
 								zIndex: 1000,
 							}}
 						>
-							<Typography variant="h2" sx={{ color: 'white', mb: 2, fontWeight: 'bold' }}>
+							<Typography
+								variant="h2"
+								sx={{ color: 'white', mb: 2, fontWeight: 'bold' }}
+							>
 								🎉 IT'S A MATCH! 🎉
 							</Typography>
 							<Typography variant="h4" sx={{ color: 'white' }}>
@@ -142,7 +145,8 @@ export default function SwipePage() {
 				{currentName && !loading && (
 					<Box sx={{ mt: 4, textAlign: 'center', maxWidth: 400 }}>
 						<Typography variant="body2" color="text.secondary">
-							💡 Drag the card left or right, or use the buttons below to make your choice
+							💡 Drag the card left or right, or use the buttons below to make your
+							choice
 						</Typography>
 					</Box>
 				)}

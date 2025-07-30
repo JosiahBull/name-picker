@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'preact/hooks';
 import {
 	Box,
 	Typography,
@@ -56,15 +56,23 @@ export default function MatchesPage() {
 					</Box>
 				) : matches.length === 0 ? (
 					<Box sx={{ textAlign: 'center', py: 8 }}>
-						<Avatar sx={{ mx: 'auto', mb: 3, bgcolor: 'primary.light', width: 80, height: 80 }}>
+						<Avatar
+							sx={{
+								mx: 'auto',
+								mb: 3,
+								bgcolor: 'primary.light',
+								width: 80,
+								height: 80,
+							}}
+						>
 							<Favorite sx={{ fontSize: 40 }} />
 						</Avatar>
 						<Typography variant="h5" gutterBottom>
 							No matches yet
 						</Typography>
 						<Typography variant="body1" color="text.secondary">
-							Keep swiping to find names you both love! When you and your partner both like the same
-							name, it will appear here.
+							Keep swiping to find names you both love! When you and your partner both
+							like the same name, it will appear here.
 						</Typography>
 					</Box>
 				) : (
@@ -74,8 +82,8 @@ export default function MatchesPage() {
 								🎉 Your Name Matches
 							</Typography>
 							<Typography variant="body1" color="text.secondary">
-								These are the names you both liked. Take your time to discuss and choose your
-								favorite!
+								These are the names you both liked. Take your time to discuss and
+								choose your favorite!
 							</Typography>
 						</Box>
 
@@ -100,14 +108,32 @@ export default function MatchesPage() {
 												mb: 2,
 											}}
 										>
-											<Typography variant="h5" component="h2" sx={{ fontWeight: 600 }}>
+											<Typography
+												variant="h5"
+												component="h2"
+												sx={{ fontWeight: 600 }}
+											>
 												{match.name}
 											</Typography>
-											<Chip icon={<Favorite />} label="Match" color="primary" variant="outlined" />
+											<Chip
+												icon={<Favorite />}
+												label="Match"
+												color="primary"
+												variant="outlined"
+											/>
 										</Box>
 
-										<Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-											<People sx={{ color: 'text.secondary', fontSize: 20 }} />
+										<Box
+											sx={{
+												display: 'flex',
+												alignItems: 'center',
+												gap: 1,
+												mb: 2,
+											}}
+										>
+											<People
+												sx={{ color: 'text.secondary', fontSize: 20 }}
+											/>
 											<Typography variant="body2" color="text.secondary">
 												Liked by both partners
 											</Typography>
@@ -123,8 +149,8 @@ export default function MatchesPage() {
 
 						<Box sx={{ mt: 4, p: 3, bgcolor: 'primary.light', borderRadius: 2 }}>
 							<Typography variant="body1" sx={{ textAlign: 'center' }}>
-								💡 <strong>Next steps:</strong> Discuss these matched names with your partner and
-								choose the one that feels right for your family!
+								💡 <strong>Next steps:</strong> Discuss these matched names with
+								your partner and choose the one that feels right for your family!
 							</Typography>
 						</Box>
 					</>

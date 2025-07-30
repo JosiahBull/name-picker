@@ -1,29 +1,29 @@
 {
-  "name": "@name-picker/shared",
-  "version": "0.0.1",
-  "private": true,
-  "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
-    "lint": "eslint . --ext ts --report-unused-disable-directives --max-warnings 0",
-    "format": "prettier --write \"src/**/*.ts\"",
-    "typecheck": "tsc --noEmit",
-    "clean": "rimraf dist node_modules"
-  },
-  "dependencies": {
-    "@supabase/supabase-js": "^2.51.0"
-  },
-  "devDependencies": {
-    "@types/node": "^24.0.13",
-    "@typescript-eslint/eslint-plugin": "^8.37.0",
-    "@typescript-eslint/parser": "^8.37.0",
-    "eslint": "^9.31.0",
-    "eslint-config-prettier": "^10.1.5",
-    "prettier": "^3.6.2",
-    "rimraf": "^6.0.1",
-    "typescript": "^5.8.3"
-  }
+	"name": "@name-picker/shared",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"scripts": {
+		"build": "tsc",
+		"dev": "tsc --watch",
+		"lint": "eslint . --ext ts --report-unused-disable-directives --max-warnings 0",
+		"format": "prettier --write \"src/**/*.{ts,tsx,js,css,json}\"",
+		"typecheck": "tsc --noEmit",
+		"clean": "rimraf dist node_modules"
+	},
+	"dependencies": {
+		"@supabase/supabase-js": "^2.53.0"
+	},
+	"devDependencies": {
+		"@types/node": "^24.1.0",
+		"@typescript-eslint/eslint-plugin": "^8.38.0",
+		"@typescript-eslint/parser": "^8.38.0",
+		"eslint": "^9.32.0",
+		"eslint-config-prettier": "^10.1.8",
+		"prettier": "^3.6.2",
+		"rimraf": "^6.0.1",
+		"typescript": "^5.8.3"
+	}
 }

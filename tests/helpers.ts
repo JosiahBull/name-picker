@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { Database } from '../../packages/shared/src/database.types';
+import { Database } from '../packages/shared/src/database.types';
 
 export class DatabaseHelper {
 	private supabase: SupabaseClient<Database>;
@@ -21,7 +21,6 @@ export class DatabaseHelper {
 		});
 	}
 
-
 	/**
 	 * Get test user IDs for Joe and Sam
 	 */
@@ -39,8 +38,8 @@ export class DatabaseHelper {
 			throw new Error('Expected to find exactly 2 test users (joe, sam)');
 		}
 
-		const joeUser = users.find(u => u.username === 'joe');
-		const samUser = users.find(u => u.username === 'sam');
+		const joeUser = users.find((u) => u.username === 'joe');
+		const samUser = users.find((u) => u.username === 'sam');
 
 		if (!joeUser || !samUser) {
 			throw new Error('Could not find both test users (joe, sam)');
@@ -61,15 +60,23 @@ export class DatabaseHelper {
 			// Get test user IDs (Joe and Sam)
 			const { joeId, samId } = await this.getTestUserIds();
 
-			// Clear matches involving test users
-			const { error: matchError } = await this.supabase
+			// Clear matches involving test users - use two separate queries to be safe
+			const { error: match1Error } = await this.supabase
 				.from('matches')
 				.delete()
-				.in('user1_id', [joeId, samId])
-				.or(`user2_id.eq.${joeId},user2_id.eq.${samId}`);
+				.in('user1_id', [joeId, samId]);
 
-			if (matchError) {
-				throw matchError;
+			if (match1Error) {
+				throw match1Error;
+			}
+
+			const { error: match2Error } = await this.supabase
+				.from('matches')
+				.delete()
+				.in('user2_id', [joeId, samId]);
+
+			if (match2Error) {
+				throw match2Error;
 			}
 
 			// Clear swipes by test users - try multiple times if needed
@@ -93,14 +100,27 @@ export class DatabaseHelper {
 				throw nameError;
 			}
 
-			// Clear any test-seeded names that might conflict
+			// Clear any names starting with `Test`
 			const { error: testNameError } = await this.supabase
 				.from('names')
 				.delete()
-				.in('name', ['TestName1', 'TestName2', 'TestName3', 'UniqueTestName1', 'UniqueTestName2']);
+				.ilike('name', 'Test%');
 
 			if (testNameError) {
 				throw testNameError;
+			}
+
+			// Debug: Check if any matches remain
+			const { data: remainingMatches } = await this.supabase
+				.from('matches')
+				.select('*')
+				.or(`user1_id.in.(${joeId},${samId}),user2_id.in.(${joeId},${samId})`);
+
+			if (remainingMatches && remainingMatches.length > 0) {
+				console.warn(
+					'⚠️ Warning: Found remaining matches after cleanup:',
+					remainingMatches,
+				);
 			}
 
 			console.log('✅ Test data cleared successfully');
@@ -110,45 +130,36 @@ export class DatabaseHelper {
 		}
 	}
 
-
 	/**
 	 * Seed a specific name for testing
 	 */
-	async seedTestName(name: string, origin?: string, meaning?: string, gender?: string): Promise<string> {
-		const { data, error } = await this.supabase
-			.from('names')
-			.insert({
-				name,
-				origin,
-				meaning,
-				gender,
-				is_user_uploaded: false,
-				popularity: 50, // Default popularity
-			})
-			.select('id')
-			.single();
+	async seedTestName(
+		userId: string,
+		name: string,
+		origin?: string,
+		meaning?: string,
+		gender?: string,
+	): Promise<string> {
+		// The name must begin with "Test" to avoid conflicts with real names
+		if (!name.startsWith('Test')) {
+			throw new Error('Test names must start with "Test" to avoid conflicts');
+		}
+		const { data, error } = await this.supabase.rpc('add_user_name', {
+			name_text: name.trim(),
+			user_id: userId,
+			origin_text: origin?.trim() || undefined,
+			meaning_text: meaning?.trim() || undefined,
+			gender_text: gender,
+		});
 
-		if (error) {
+		if (error || !data) {
+			if (!data) {
+				throw new Error(`Failed to seed name "${name}": No data returned`);
+			}
 			throw error;
 		}
 
-		return data.id;
-	}
-
-	/**
-	 * Seed unique test names with timestamp to avoid conflicts
-	 */
-	async seedUniqueTestNames(count: number = 2): Promise<string[]> {
-		const timestamp = Date.now();
-		const names: string[] = [];
-		
-		for (let i = 1; i <= count; i++) {
-			const name = `TestName${i}_${timestamp}`;
-			const id = await this.seedTestName(name, 'Test Origin', 'Test Meaning', 'neutral');
-			names.push(id);
-		}
-		
-		return names;
+		return data as string;
 	}
 
 	/**
@@ -187,45 +198,27 @@ export class DatabaseHelper {
 	}
 
 	/**
-	 * Get user analytics from the database
+	 * Get all swipes for a user
+	 * @param userId
+	 * @returns
 	 */
-	async getUserAnalytics(userId: string): Promise<{
-		totalSwipes: number;
-		likes: number;
-		dislikes: number;
-		matches: number;
-	}> {
-		// Get total swipes for user
-		const { data: swipes, error: swipeError } = await this.supabase
+	async getAllSwipes(userId?: string): Promise<any[]> {
+		const query = this.supabase
 			.from('swipes')
 			.select('*')
-			.eq('user_id', userId);
+			.order('created_at', { ascending: false });
 
-		if (swipeError) {
-			throw swipeError;
+		if (userId) {
+			query.eq('user_id', userId);
 		}
 
-		// Get matches for user
-		const { data: matches, error: matchError } = await this.supabase
-			.from('matches')
-			.select('*')
-			.or(`user1_id.eq.${userId},user2_id.eq.${userId}`);
+		const { data, error } = await query;
 
-		if (matchError) {
-			throw matchError;
+		if (error) {
+			throw error;
 		}
 
-		const totalSwipes = swipes?.length || 0;
-		const likes = swipes?.filter(s => s.action === 'like').length || 0;
-		const dislikes = swipes?.filter(s => s.action === 'dislike').length || 0;
-		const matchCount = matches?.length || 0;
-
-		return {
-			totalSwipes,
-			likes,
-			dislikes,
-			matches: matchCount,
-		};
+		return data || [];
 	}
 
 	/**
@@ -250,7 +243,11 @@ export class DatabaseHelper {
 	/**
 	 * Verify that a swipe was recorded in the database
 	 */
-	async verifySwipeRecorded(userId: string, nameId: string, action: 'like' | 'dislike'): Promise<boolean> {
+	async verifySwipeRecorded(
+		userId: string,
+		nameId: string,
+		action: 'like' | 'dislike',
+	): Promise<boolean> {
 		const swipe = await this.getUserSwipeForName(userId, nameId);
 		return swipe !== null && swipe.action === action;
 	}

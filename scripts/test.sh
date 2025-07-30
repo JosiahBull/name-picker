@@ -32,7 +32,7 @@ fi
 # Run E2E tests with Playwright
 echo "🎭 Running E2E tests..."
 
-pnpm exec playwright test --reporter=line "$@"
+pnpm exec playwright test --reporter=line,html "$@"
 PLAYWRIGHT_EXIT_CODE=$?
 
 # Exit with the same code as playwright
