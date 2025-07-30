@@ -1,4 +1,4 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { Database } from './database.types';
 import { Name, SwipeAction, Match, User, Analytics, SwipeResult, ApiClient } from './types';
 
@@ -6,13 +6,13 @@ export class SupabaseApiClient implements ApiClient {
 	private static instance: SupabaseApiClient | null = null;
 	private client: SupabaseClient<Database>;
 
-	private constructor(supabaseUrl: string, supabaseKey: string) {
-		this.client = createClient<Database>(supabaseUrl, supabaseKey);
+	private constructor(client: SupabaseClient<Database>) {
+		this.client = client;
 	}
 
-	public static getInstance(supabaseUrl: string, supabaseKey: string): SupabaseApiClient {
+	public static getInstance(client: SupabaseClient<Database>): SupabaseApiClient {
 		if (!SupabaseApiClient.instance) {
-			SupabaseApiClient.instance = new SupabaseApiClient(supabaseUrl, supabaseKey);
+			SupabaseApiClient.instance = new SupabaseApiClient(client);
 		}
 		return SupabaseApiClient.instance;
 	}

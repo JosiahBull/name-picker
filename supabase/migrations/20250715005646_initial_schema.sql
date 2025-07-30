@@ -128,20 +128,19 @@ CREATE POLICY "Users can view their own matches" ON public.matches
     FOR SELECT USING (auth.uid() = user1_id OR auth.uid() = user2_id);
 
 -- Create a view for easier match querying
-CREATE VIEW public.user_matches AS
-SELECT 
-    m.id,
+CREATE VIEW public.user_matches WITH (security_invoker = on) AS
+SELECT m.id,
     m.name_id,
     n.name,
     m.user1_id,
     m.user2_id,
     m.created_at,
-    CASE 
-        WHEN m.user1_id = auth.uid() THEN m.user2_id
-        ELSE m.user1_id
-    END AS partner_id
-FROM public.matches m
-JOIN public.names n ON m.name_id = n.id
+        CASE
+            WHEN m.user1_id = auth.uid() THEN m.user2_id
+            ELSE m.user1_id
+        END AS partner_id
+FROM matches m
+    JOIN names n ON m.name_id = n.id
 WHERE m.user1_id = auth.uid() OR m.user2_id = auth.uid();
 
 -- Create a function to get analytics for a user

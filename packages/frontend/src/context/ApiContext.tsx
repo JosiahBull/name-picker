@@ -1,6 +1,7 @@
 import { createContext, ComponentChildren } from 'preact';
 import { useContext } from 'preact/hooks';
 import { ApiClient, SupabaseApiClient } from '@name-picker/shared';
+import { supabase } from '../lib/supabase';
 
 interface ApiContextType {
 	api: ApiClient;
@@ -13,10 +14,7 @@ interface ApiProviderProps {
 }
 
 export function ApiProvider({ children }: ApiProviderProps) {
-	const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-	const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-	const api = SupabaseApiClient.getInstance(supabaseUrl, supabaseKey);
+	const api = SupabaseApiClient.getInstance(supabase);
 
 	return <ApiContext.Provider value={{ api }}>{children}</ApiContext.Provider>;
 }
